@@ -5,12 +5,12 @@ import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_equipm
 class BluetoothEquipmentModel extends Equatable {
   final String id;
   final BluetoothDevice equipment;
-  final BluetothEquipmentType equipmentType;
+  final BluetoothEquipmentType equipmentType;
 
   BluetoothEquipmentModel({
     required this.id,
     required this.equipment,
-    this.equipmentType = BluetothEquipmentType.undefined,
+    this.equipmentType = BluetoothEquipmentType.undefined,
   });
 
   @override

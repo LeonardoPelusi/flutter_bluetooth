@@ -1,34 +1,53 @@
 part of 'bluetooth_equipments_bloc.dart';
 
 @immutable
-sealed class BluetoothEquipmentsState {}
+sealed class BluetoothEquipmentsState extends Equatable {
+  final List<BluetoothEquipmentModel> bluetoothEquipments;
 
-final class BluetoothEquipmentsInitialState extends BluetoothEquipmentsState {}
+  const BluetoothEquipmentsState({
+    this.bluetoothEquipments = const [],
+  });
+}
 
-final class BluetoothEquipmentsListLoadingState extends BluetoothEquipmentsState {}
+final class BluetoothEquipmentsInitialState extends BluetoothEquipmentsState {
+  @override
+  List<Object?> get props => [bluetoothEquipments];
+}
 
-final class BluetoothEquipmentsListAddEquipmentState extends BluetoothEquipmentsState {
+final class BluetoothEquipmentsListLoadingState
+    extends BluetoothEquipmentsState {
+  @override
+  List<Object?> get props => [bluetoothEquipments];
+}
+
+final class BluetoothEquipmentsListAddEquipmentState
+    extends BluetoothEquipmentsState {
   final BluetoothEquipmentModel bluetoothEquipment;
 
-  BluetoothEquipmentsListAddEquipmentState({
+  const BluetoothEquipmentsListAddEquipmentState({
     required this.bluetoothEquipment,
   });
+
+  @override
+  List<Object?> get props => [bluetoothEquipments];
 }
 
 final class BluetoothEquipmentsBackgroundListLoadedState
     extends BluetoothEquipmentsState {
-  final List<BluetoothEquipmentModel> bluetoothEquipments;
-
-  BluetoothEquipmentsBackgroundListLoadedState({
-    required this.bluetoothEquipments,
+  const BluetoothEquipmentsBackgroundListLoadedState({
+    required super.bluetoothEquipments,
   });
+
+  @override
+  List<Object?> get props => [bluetoothEquipments];
 }
 
 final class BluetoothEquipmentsListLoadedState
     extends BluetoothEquipmentsState {
-  final List<BluetoothEquipmentModel> bluetoothEquipments;
-
-  BluetoothEquipmentsListLoadedState({
-    required this.bluetoothEquipments,
+  const BluetoothEquipmentsListLoadedState({
+    required super.bluetoothEquipments,
   });
+
+  @override
+  List<Object?> get props => [bluetoothEquipments];
 }

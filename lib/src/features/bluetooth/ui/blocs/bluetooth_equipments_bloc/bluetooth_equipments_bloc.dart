@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_shared_preferences_service.dart';
 import 'package:meta/meta.dart';
@@ -180,7 +181,7 @@ class BluetoothEquipmentsBloc
           }
         } else if (BluetoothHelper.frequencyMeterValidation(newDevice)) {
           _addEquipmentInList(
-            equipmentType: BluetoothEquipmentType.frequence_meter,
+            equipmentType: BluetoothEquipmentType.frequencyMeter,
             equipment: newDevice,
             id: newId,
           );
@@ -276,11 +277,11 @@ class BluetoothEquipmentsBloc
           _treadmillList.add(_treadmill);
         }
         break;
-      case BluetoothEquipmentType.frequence_meter:
+      case BluetoothEquipmentType.frequencyMeter:
         final BluetoothEquipmentModel _frequencyMeter = BluetoothEquipmentModel(
           id: id,
           equipment: equipment,
-          equipmentType: BluetoothEquipmentType.frequence_meter,
+          equipmentType: BluetoothEquipmentType.frequencyMeter,
         );
         if (!_frequencyMeterList.contains(_frequencyMeter)) {
           _frequencyMeterList.add(_frequencyMeter);

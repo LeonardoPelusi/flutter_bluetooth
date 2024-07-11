@@ -1,6 +1,6 @@
 enum BluetoothEquipmentType {
   undefined,
-  frequence_meter,
+  frequencyMeter,
   bikeGoper,
   bikeKeiser,
   treadmill,
