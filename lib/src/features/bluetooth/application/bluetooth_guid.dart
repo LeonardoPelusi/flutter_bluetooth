@@ -1,4 +1,4 @@
-part of 'bluetooth_services.dart';
+part of 'services/bluetooth_equipment_service.dart';
 
 abstract class BluetoothGuid {
   Guid get fitnessMachineService;
