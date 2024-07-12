@@ -7,31 +7,39 @@ class BluetoothEquipmentInitialEvent extends BluetoothEquipmentEvent {}
 
 class BluetoothEquipmentConnectEvent extends BluetoothEquipmentEvent {
   final BluetoothEquipmentModel bluetoothEquipment;
-  final bool resetRetries;
+
   BluetoothEquipmentConnectEvent({
     required this.bluetoothEquipment,
-    required this.resetRetries,
   });
 }
 
-class BluetoothEquipmentConnectBikeEvent extends BluetoothEquipmentEvent {
-  final BluetoothDevice equipment;
-  BluetoothEquipmentConnectBikeEvent({
-    required this.equipment,
+class BluetoothEquipmentConnectValidatorEvent extends BluetoothEquipmentEvent {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  BluetoothEquipmentConnectValidatorEvent({
+    required this.bluetoothEquipment,
   });
 }
 
-class BluetoothEquipmentConnectTreadmillEvent extends BluetoothEquipmentEvent {
-  final BluetoothDevice equipment;
-  BluetoothEquipmentConnectTreadmillEvent({
-    required this.equipment,
+class BluetoothEquipmentBroadcastConnectEvent extends BluetoothEquipmentEvent {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  BluetoothEquipmentBroadcastConnectEvent({
+    required this.bluetoothEquipment,
   });
 }
 
-class BluetoothEquipmentConnectFrequencyMeterEvent extends BluetoothEquipmentEvent {
-  final BluetoothDevice equipment;
-  BluetoothEquipmentConnectFrequencyMeterEvent({
-    required this.equipment,
+class BluetoothEquipmentDirectConnectEvent extends BluetoothEquipmentEvent {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  final int retries;
+  BluetoothEquipmentDirectConnectEvent({
+    required this.bluetoothEquipment,
+    this.retries = 0,
+  });
+}
+
+class BluetoothEquipmentTrackEvent extends BluetoothEquipmentEvent {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  BluetoothEquipmentTrackEvent({
+    required this.bluetoothEquipment,
   });
 }
 
@@ -41,10 +49,3 @@ class BluetoothEquipmentDisconnectEvent extends BluetoothEquipmentEvent {
     required this.bluetoothEquipment,
   });
 }
-
-class BluetoothEquipmentDisconnectBikeEvent extends BluetoothEquipmentEvent {}
-
-class BluetoothEquipmentDisconnectTreadmillEvent extends BluetoothEquipmentEvent {}
-
-class BluetoothEquipmentDisconnectFrequencyMeterEvent
-    extends BluetoothEquipmentEvent {}

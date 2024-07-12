@@ -31,7 +31,7 @@ abstract class BluetoothHelper {
   }
 
   static bool bikeValidation(BluetoothDevice device) {
-    if (_bikeGoperValidation(device) || _bikeKeiserValidation(device)) {
+    if (_bikeGoperValidation(device) || bikeKeiserValidation(device)) {
       return true;
     }
     return false;
@@ -44,7 +44,7 @@ abstract class BluetoothHelper {
     return false;
   }
 
-  static bool _bikeKeiserValidation(BluetoothDevice device) {
+  static bool bikeKeiserValidation(BluetoothDevice device) {
     if (device.name.contains('M3')) return true;
     return false;
   }

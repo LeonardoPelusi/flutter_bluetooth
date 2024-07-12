@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_shared_preferences_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
 import 'package:meta/meta.dart';
 
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
@@ -19,6 +20,7 @@ class BluetoothEquipmentsBloc
     extends Bloc<BluetoothEquipmentsEvent, BluetoothEquipmentsState> {
   BluetoothEquipmentsBloc(
     this._bluetoothSharedPreferencesService,
+    this._bluetoothEquipmentBloc,
   ) : super(BluetoothEquipmentsInitialState()) {
     on<BluetoothEquipmentsBackgroundScanEvent>(_backgroundScan);
     on<BluetoothEquipmentsNewScanEvent>(_newScan);
@@ -40,10 +42,12 @@ class BluetoothEquipmentsBloc
           event == BluetoothState.off) {
         Bluetooth.bleOn.value = false;
         add(BluetoothEquipmentsDisconnectBluetoothEvent(closeTraining: false));
-        Bluetooth.connectedDevices.value = [false, false, false];
       }
     });
   }
+
+  final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
+  final BluetoothEquipmentBloc _bluetoothEquipmentBloc;
 
   // Packages
   final FlutterBluePlus _flutterBluePlus = FlutterBluePlus.instance;
@@ -51,7 +55,6 @@ class BluetoothEquipmentsBloc
   // Services
   final BluetoothEquipmentService _bluetoothEquipmentService =
       BluetoothEquipmentService.instance;
-  final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
 
   // Stream
   StreamSubscription<List<ScanResult>>? _scanStream;
@@ -160,7 +163,9 @@ class BluetoothEquipmentsBloc
             // _sharedPreferencesTryConnectWithEquipment(_bike);
             // }
           } else {
-            emit(BluetoothEquipmentsListAddEquipmentState(bluetoothEquipment: _bike));
+            emit(BluetoothEquipmentsListAddEquipmentState(
+              bluetoothEquipment: _bike,
+            ));
           }
         } else if (_isTreadmillBLE &&
             BluetoothHelper.treadmillValidation(newDevice)) {
@@ -177,7 +182,9 @@ class BluetoothEquipmentsBloc
             // _sharedPreferencesTryConnectWithEquipment(_treadmill);
             // }
           } else {
-            emit(BluetoothEquipmentsListAddEquipmentState(bluetoothEquipment: _treadmill));
+            emit(BluetoothEquipmentsListAddEquipmentState(
+              bluetoothEquipment: _treadmill,
+            ));
           }
         } else if (BluetoothHelper.frequencyMeterValidation(newDevice)) {
           _addEquipmentInList(
@@ -186,7 +193,9 @@ class BluetoothEquipmentsBloc
             id: newId,
           );
           if (!event.isBackgroundScan) {
-            emit(BluetoothEquipmentsListAddEquipmentState(bluetoothEquipment: _frequencyMeter));
+            emit(BluetoothEquipmentsListAddEquipmentState(
+              bluetoothEquipment: _frequencyMeter,
+            ));
           }
         }
       }
@@ -198,13 +207,19 @@ class BluetoothEquipmentsBloc
     Emitter<BluetoothEquipmentsState> emit,
   ) {
     if (_bikeList.length == 1 && _treadmillList.isEmpty) {
-      _bluetoothEquipmentCubit.connectDevice(_bikeList[0]);
+      _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
+        bluetoothEquipment: _bikeList[0],
+      ));
     } else if (_treadmillList.length == 1 && _bikeList.isEmpty) {
-      _bluetoothEquipmentCubit.connectDevice(_treadmillList[0]);
+      _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
+        bluetoothEquipment: _treadmillList[0],
+      ));
     }
 
     if (_frequencyMeterList.length == 1) {
-      _bluetoothEquipmentCubit.connectDevice(_frequencyMeterList[0]);
+      _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
+        bluetoothEquipment: _frequencyMeterList[0],
+      ));
     }
 
     if (_bikeList.length > 1 ||
@@ -240,7 +255,7 @@ class BluetoothEquipmentsBloc
     _treadmillList.clear();
     _frequencyMeterList.clear();
     Bluetooth.bleOn.value = false;
-    _bluetoothEquipmentCubit.disconnectBluetooth(
+    _bluetoothEquipmentBloc.disconnectBluetooth(
       closingTraining: event.closeTraining,
     );
   }
@@ -292,15 +307,13 @@ class BluetoothEquipmentsBloc
     }
   }
 
-
-
   // !TODO BLUETOOTH: Implementar SharedPreferences
   // Future<void> _sharedPreferencesTryConnectWithEquipment(
   //     DeviceWithId device) async {
   //   final String equipmentId = _bluetoothSharedPreferencesService.equipmentId;
 
   //   if (device.device.id.id == equipmentId) {
-  //     await _bluetoothEquipmentCubit.connectDevice(device);
+  //     await _bluetoothEquipmentBloc.connectDevice(device);
   //   }
   // }
 

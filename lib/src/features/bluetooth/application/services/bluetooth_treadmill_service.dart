@@ -11,7 +11,7 @@ class BluetoothTreadmillService {
   ValueNotifier<double> speed = ValueNotifier<double>(0);
   ValueNotifier<double> inclination = ValueNotifier<double>(0);
 
-  // Variáveis para o geração do gráfico
+  // Variáveis para a geração de graficos
   int powerBest = 0;
   double speedBest = 0;
 
@@ -26,7 +26,7 @@ class BluetoothTreadmillService {
   late List<int> treadmillData;
 
   //seleciona treadmill para trazer métricas da esteira
-  getTreadmillData(List<BluetoothService> _services) async {
+  void getTreadmillData(List<BluetoothService> _services) async {
     _cleanTreadmillData();
 
     _fitnessMachineService = _services.firstWhere((service) =>
@@ -78,7 +78,10 @@ class BluetoothTreadmillService {
     treadmillData = [];
   }
 
-  // Private methods
+  void disconnectTreadmill() {
+    _cleanTreadmillData();
+  }
+
 
   double _powerForTreadmill(double speed, double inclination) {
     double percentage = inclination / 100;

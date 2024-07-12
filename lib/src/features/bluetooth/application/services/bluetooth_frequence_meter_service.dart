@@ -30,7 +30,8 @@ class BluetoothFrequencyMeterService {
   late List<int> bpmData;
 
   //seleciona o servico de user data para escrever os campos idade e peso
-  getUserData(List<BluetoothService> _services, int idade, double peso) async {
+  Future<void> getUserData(
+      List<BluetoothService> _services, int idade, double peso) async {
     _clearUserData();
 
     _userDataService = _services.firstWhere(
@@ -58,7 +59,8 @@ class BluetoothFrequencyMeterService {
   }
 
   //seleciona servico do frequency meter para imprimir o frequency meter measurement (BPM)
-  getFrequencyMeterMeasurement(List<BluetoothService> _services) async {
+  Future<void> getFrequencyMeterMeasurement(
+      List<BluetoothService> _services) async {
     _cleanFequencyMeterData();
 
     _frequencyMeterService = _services.firstWhere(
@@ -97,5 +99,10 @@ class BluetoothFrequencyMeterService {
     bpmMedia = 0;
     _frequencyMeterCharacteristicStream?.cancel();
     _frequencyMeterCharacteristicStream = null;
+  }
+
+  void disconnectFrequencyMeter() {
+    _clearUserData();
+    _cleanFequencyMeterData();
   }
 }
