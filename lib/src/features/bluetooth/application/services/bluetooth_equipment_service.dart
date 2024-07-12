@@ -2,21 +2,30 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_equipment_model.dart';
 
+part 'bluetooth_bike_service.dart';
 part 'bluetooth_treadmill_service.dart';
+part 'bluetooth_frequence_meter_service.dart';
 
 part '../bluetooth_guid.dart';
 
 class BluetoothEquipmentService {
   static final BluetoothEquipmentService instance = BluetoothEquipmentService();
 
-  BluetoothGuid get guids => _BluetoothGuid();
-  TreadmillService get treadmillService => TreadmillService.instance;
+  static BluetoothGuid get guids => _BluetoothGuid();
+
+  // Equipments Services
+  BluetoothBikeService get bikeService => BluetoothBikeService.instance;
+  BluetoothTreadmillService get treadmillService =>
+      BluetoothTreadmillService.instance;
+  BluetoothFrequencyMeterService get frequencyMeterService =>
+      BluetoothFrequencyMeterService.instance;
 
   ValueNotifier<List<bool>> get connectedDevices => ValueNotifier([
-        false,
-        false,
+        bikeService.connectedBike != null,
         treadmillService.connectedTreadmill != null,
+        frequencyMeterService.connectedFrequencyMeter != null,
       ]);
 
   String getEquipmentId({
