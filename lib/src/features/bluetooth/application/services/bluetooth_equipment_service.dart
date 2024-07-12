@@ -10,7 +10,14 @@ part '../bluetooth_guid.dart';
 class BluetoothEquipmentService {
   static final BluetoothEquipmentService instance = BluetoothEquipmentService();
 
-  static BluetoothGuid get guids => _BluetoothGuid();
+  BluetoothGuid get guids => _BluetoothGuid();
+  TreadmillService get treadmillService => TreadmillService.instance;
+
+  ValueNotifier<List<bool>> get connectedDevices => ValueNotifier([
+        false,
+        false,
+        treadmillService.connectedTreadmill != null,
+      ]);
 
   String getEquipmentId({
     required Iterable<List<int>> manufacturerData,

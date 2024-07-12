@@ -1,65 +1,78 @@
 part of 'bluetooth_equipment_service.dart';
 
-// abstract class TreadmillService {
-//   late BluetoothService _fitnessMachineService;
-//   late BluetoothCharacteristic _treadmillFitnessData;
-//   StreamSubscription? treadmillCharacteristicStream;
-//   late List<int> treadmillData;
+class TreadmillService {
+  static TreadmillService get instance => TreadmillService();
 
-//   //valores características dos serviços bluetooth
-//   static ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
+  late BluetoothService _fitnessMachineService;
+  late BluetoothCharacteristic _treadmillFitnessData;
+  StreamSubscription? treadmillCharacteristicStream;
+  late List<int> treadmillData;
 
-//   //valores treino com bike e treadmill
-//   static ValueNotifier<double> speed = ValueNotifier<double>(0);
-//   static ValueNotifier<double> inclination = ValueNotifier<double>(0);
+  BluetoothDevice? connectedTreadmill;
 
-//   //seleciona treadmill para trazer métricas da esteira
-//   getTreadmillData(List<BluetoothService> _services) async {
-//     _fitnessMachineService = _services.firstWhere((service) =>
-//         service.uuid == BluetoothServices.guids.fitnessMachineService);
+  //valores características dos serviços bluetooth
+  ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
 
-//     _treadmillFitnessData = _fitnessMachineService.characteristics.firstWhere(
-//         (characteristic) =>
-//             characteristic.uuid ==
-//             BluetoothServices.guids.treadmillFitnessData);
+  //valores treino com bike e treadmill
+  ValueNotifier<double> speed = ValueNotifier<double>(0);
+  ValueNotifier<double> inclination = ValueNotifier<double>(0);
 
-//     treadmillCharacteristicStream = _treadmillFitnessData.value.listen((value) {
-//       treadmillData = value;
-//       int byte = 2;
+  //seleciona treadmill para trazer métricas da esteira
+  getTreadmillData(List<BluetoothService> _services) async {
+    _fitnessMachineService = _services.firstWhere((service) =>
+        service.uuid == BluetoothEquipmentService.guids.fitnessMachineService);
 
-//       if (treadmillData.isNotEmpty) {
-//         speed.value = ((treadmillData[byte + 1] << 8 | (treadmillData[byte]))
-//                 .toDouble()) /
-//             100;
-//         byte += 2;
+    _treadmillFitnessData = _fitnessMachineService.characteristics.firstWhere(
+        (characteristic) =>
+            characteristic.uuid ==
+            BluetoothEquipmentService.guids.treadmillFitnessData);
 
-//         if (speed.value > speedBest) speedBest = speed.value;
+    treadmillCharacteristicStream = _treadmillFitnessData.value.listen((value) {
+      treadmillData = value;
+      int byte = 2;
 
-//         if (treadmillData[0] & 0x04 == 0x04) {
-//           byte += 3;
-//         }
+      if (treadmillData.isNotEmpty) {
+        speed.value = ((treadmillData[byte + 1] << 8 | (treadmillData[byte]))
+                .toDouble()) /
+            100;
+        byte += 2;
 
-//         inclination.value = (treadmillData[byte].toDouble());
+        if (speed.value > speedBest) speedBest = speed.value;
 
-//         instaPower.value =
-//             powerForTreadmill(speed.value, inclination.value).round();
+        if (treadmillData[0] & 0x04 == 0x04) {
+          byte += 3;
+        }
 
-//         if (instaPower.value != 0) {
-//           if (instaPower.value > powerBest) powerBest = instaPower.value;
-//         }
-//       }
-//     });
-//     Future.delayed(Duration(milliseconds: 1500));
-//     await _treadmillFitnessData.setNotifyValue(true);
-//   }
+        inclination.value = (treadmillData[byte].toDouble());
 
-//   double powerForTreadmill(double speed, double inclination) {
-//     double percentage = inclination / 100;
+        instaPower.value =
+            _powerForTreadmill(speed.value, inclination.value).round();
 
-//     return speed * 25 * _exponentiationSqr(percentage * 10 + 1);
-//   }
+        if (instaPower.value != 0) {
+          if (instaPower.value > powerBest) powerBest = instaPower.value;
+        }
+      }
+    });
+    Future.delayed(Duration(milliseconds: 1500));
+    await _treadmillFitnessData.setNotifyValue(true);
+  }
 
-//   double _exponentiationSqr(double number) {
-//     return number * number;
-//   }
-// }
+  void cleanTreadmillData() {
+    connectedTreadmill = null;
+    speed.value = 0;
+    inclination.value = 0;
+    instaPower.value = 0;
+  }
+
+  // Private methods
+
+  double _powerForTreadmill(double speed, double inclination) {
+    double percentage = inclination / 100;
+
+    return speed * 25 * _exponentiationSqr(percentage * 10 + 1);
+  }
+
+  double _exponentiationSqr(double number) {
+    return number * number;
+  }
+}
