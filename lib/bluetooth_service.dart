@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'src/features/goper_aluno_core.dart';
+// import 'src/features/goper_aluno_core.dart';
 
 class Bluetooth {
   String? deviceIdBLEConnection;
@@ -64,52 +64,52 @@ class Bluetooth {
     }
   }
 
-  resetData() {
-    powerBest = 0;
-    powerMedia.value = 0;
-    cumulativePower.value = 0;
-    cadenceBest = 0;
-    cadenceMedia = 0;
-    speedMedia = 0;
-    speedBest = 0;
-    speedLength = 0;
-    cumulativeSpeed = 0;
+  // resetData() {
+  //   powerBest = 0;
+  //   powerMedia.value = 0;
+  //   cumulativePower.value = 0;
+  //   cadenceBest = 0;
+  //   cadenceMedia = 0;
+  //   speedMedia = 0;
+  //   speedBest = 0;
+  //   speedLength = 0;
+  //   cumulativeSpeed = 0;
 
-    cleanBikeData();
-    cleanHeartRateData();
-    cleanTreadmillData();
-    clearUserData();
-  }
+  //   cleanBikeData();
+  //   cleanHeartRateData();
+  //   cleanTreadmillData();
+  //   clearUserData();
+  // }
 
-  disconnectBluetoothDevices() {
-    heartRateDevice?.device.disconnect();
-    bikeDevice?.device.disconnect();
-    treadmillDevice?.device.disconnect();
-    bikeCharacteristicStream?.cancel();
-    ziyouCharacteristicStream?.cancel();
-  }
+  // disconnectBluetoothDevices() {
+  //   heartRateDevice?.device.disconnect();
+  //   bikeDevice?.device.disconnect();
+  //   treadmillDevice?.device.disconnect();
+  //   bikeCharacteristicStream?.cancel();
+  //   ziyouCharacteristicStream?.cancel();
+  // }
 }
 
-class DeviceWithId extends Equatable {
-  final BluetoothDevice device;
-  final String id;
-  final BluetothEquipmentType equipmentType;
+// class DeviceWithId extends Equatable {
+//   final BluetoothDevice device;
+//   final String id;
+//   final BluetothEquipmentType equipmentType;
 
-  DeviceWithId({
-    required this.device,
-    required this.id,
-    this.equipmentType = BluetothEquipmentType.undefined,
-  });
+//   DeviceWithId({
+//     required this.device,
+//     required this.id,
+//     this.equipmentType = BluetothEquipmentType.undefined,
+//   });
 
-  @override
-  List<Object?> get props {
-    return [
-      device,
-      id,
-      equipmentType,
-    ];
-  }
-}
+//   @override
+//   List<Object?> get props {
+//     return [
+//       device,
+//       id,
+//       equipmentType,
+//     ];
+//   }
+// }
 
 class HeartRateBleController {
   bool deviceConnected;

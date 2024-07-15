@@ -10,21 +10,8 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const BluetoothScreen()),
-              );
-            },
-            child: Text('Blutooth'),
-          ),
-        ),
-      ),
+    return const MaterialApp(
+      home: BluetoothScreen(),
     );
   }
 }
