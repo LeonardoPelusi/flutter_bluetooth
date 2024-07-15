@@ -19,7 +19,8 @@ part 'bluetooth_equipments_state.dart';
 class BluetoothEquipmentsBloc
     extends Bloc<BluetoothEquipmentsEvent, BluetoothEquipmentsState> {
   BluetoothEquipmentsBloc(
-    this._bluetoothSharedPreferencesService,
+    //!TODO Adicionar bluetooth shared preferences service
+    // this._bluetoothSharedPreferencesService,
     this._bluetoothEquipmentBloc,
   ) : super(BluetoothEquipmentsInitialState()) {
     on<BluetoothEquipmentsBackgroundScanEvent>(_backgroundScan);
@@ -46,7 +47,7 @@ class BluetoothEquipmentsBloc
     });
   }
 
-  final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
+  // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
   final BluetoothEquipmentBloc _bluetoothEquipmentBloc;
 
   // Packages
@@ -90,7 +91,8 @@ class BluetoothEquipmentsBloc
       timeout: _backgroundScanTimeoutDuration,
       withServices: event.retries >= 3
           ? []
-          : _bluetoothSharedPreferencesService.getServicesValidation(),
+          // : _bluetoothSharedPreferencesService.getServicesValidation(),
+          : [],
     )
         .then((_) async {
       // Caso o usuário der stop no scan, não será necessário realizar esses processos
@@ -123,7 +125,8 @@ class BluetoothEquipmentsBloc
       timeout: _newScanTimeoutDuration,
       withServices: event.isRetry
           ? []
-          : _bluetoothSharedPreferencesService.getServicesValidation(),
+          // : _bluetoothSharedPreferencesService.getServicesValidation(),
+          : [],
     )
         .then((_) async {
       // Caso o usuário der stop no scan, não será necessário realizar esses processos

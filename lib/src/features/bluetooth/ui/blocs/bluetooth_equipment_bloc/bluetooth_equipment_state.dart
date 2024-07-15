@@ -10,7 +10,10 @@ final class BluetoothEquipmentConnectingState extends BluetoothEquipmentState {
   BluetoothEquipmentConnectingState({required this.connectingEquipment});
 }
 
-final class BluetoothEquipmentConnectedState extends BluetoothEquipmentState {}
+final class BluetoothEquipmentConnectedState extends BluetoothEquipmentState {
+  final BluetoothEquipmentModel connectedEquipment;
+  BluetoothEquipmentConnectedState({required this.connectedEquipment});
+}
 
 final class BluetoothEquipmentErrorState extends BluetoothEquipmentState {
   final String message;

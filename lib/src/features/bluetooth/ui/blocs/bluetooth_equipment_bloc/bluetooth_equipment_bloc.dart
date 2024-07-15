@@ -17,10 +17,12 @@ part 'bluetooth_equipment_state.dart';
 class BluetoothEquipmentBloc
     extends Bloc<BluetoothEquipmentEvent, BluetoothEquipmentState> {
   BluetoothEquipmentBloc(
-    this._bluetoothSharedPreferencesService,
-    this._trainingFlowData,
-    this._bikeKeiserCubit,
-  ) : super(BluetoothEquipmentInitialState()) {
+      //!TODO implementar shared preferences
+      // this._bluetoothSharedPreferencesService,
+      // this._trainingFlowData,
+      // this._bikeKeiserCubit,
+      )
+      : super(BluetoothEquipmentInitialState()) {
     on<BluetoothEquipmentConnectEvent>(_connectEquipment);
     on<BluetoothEquipmentConnectValidatorEvent>(_connectValidator);
     on<BluetoothEquipmentBroadcastConnectEvent>(_broadcastConnect);
@@ -30,9 +32,9 @@ class BluetoothEquipmentBloc
   }
 
   // Services
-  final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
-  final TrainingFlowData _trainingFlowData;
-  final BikeKeiserCubit _bikeKeiserCubit;
+  // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
+  // final TrainingFlowData _trainingFlowData;
+  // final BikeKeiserCubit _bikeKeiserCubit;
 
   // Bluetooth Services
   final BluetoothBikeService _bleBikeService =
@@ -60,6 +62,7 @@ class BluetoothEquipmentBloc
       bluetoothEquipment: bluetoothEquipment,
     ));
 
+    // !TODO implementar lógica broadcast
     if (BluetoothHelper.bikeKeiserValidation(bluetoothEquipment.equipment)) {
       add(BluetoothEquipmentBroadcastConnectEvent(
         bluetoothEquipment: bluetoothEquipment,
@@ -114,27 +117,28 @@ class BluetoothEquipmentBloc
         Future.delayed(const Duration(milliseconds: 200), () {
           Bluetooth.broadcastKeiser.value = true;
           // cancelar broadcast anterior, se houver
-          _bikeKeiserCubit.cancelBikeKeiserBroadcastDetection();
-          // inicicar listen do broadcast da nova bike selecionada
-          _bikeKeiserCubit.newBroadcastRequested();
-          _bikeKeiserCubit.listenToBikeKeiserBroadcast(
-              bikeId: bluetoothEquipment.id);
+          // _bikeKeiserCubit.cancelBikeKeiserBroadcastDetection();
+          // // inicicar listen do broadcast da nova bike selecionada
+          // _bikeKeiserCubit.newBroadcastRequested();
+          // _bikeKeiserCubit.listenToBikeKeiserBroadcast(
+          //     bikeId: bluetoothEquipment.id);
           // é necessário reiniciar o broadcast depois de 30min
           timer?.cancel();
           timer = Timer(Duration(minutes: 26), () {
-            _bikeKeiserCubit.listenToBikeKeiserBroadcast(
-              bikeId: bluetoothEquipment.id,
-            );
+            // _bikeKeiserCubit.listenToBikeKeiserBroadcast(
+            //   bikeId: bluetoothEquipment.id,
+            // );
           });
 
           _bleBikeService.disconnectBike();
           _bleBikeService.connectedBike = bluetoothEquipment;
-          _bluetoothSharedPreferencesService.bluetoothCryptoBikeKeiser(
-            bikeKeiserId: bluetoothEquipment.equipment.id.id,
-          );
-          _trainingFlowData.postBikeGraph = true;
+          // _bluetoothSharedPreferencesService.bluetoothCryptoBikeKeiser(
+          //   bikeKeiserId: bluetoothEquipment.equipment.id.id,
+          // );
+          // _trainingFlowData.postBikeGraph = true;
 
-          emit(BluetoothEquipmentConnectedState());
+          emit(BluetoothEquipmentConnectedState(
+              connectedEquipment: bluetoothEquipment));
         });
         break;
       case BluetoothEquipmentType.bikeGoper:
@@ -230,38 +234,40 @@ class BluetoothEquipmentBloc
         bluetoothEquipment.equipment.state.listen((state) async {
       switch (state) {
         case BluetoothDeviceState.connected:
-          emit(BluetoothEquipmentConnectedState());
+          emit(BluetoothEquipmentConnectedState(
+            connectedEquipment: bluetoothEquipment,
+          ));
           List<BluetoothService> services =
               await bluetoothEquipment.equipment.discoverServices();
           switch (bluetoothEquipment.equipmentType) {
             case BluetoothEquipmentType.bikeGoper:
               _bleBikeService.connectedBike = bluetoothEquipment;
-              await _bluetoothSharedPreferencesService.bluetoothCryptoBikeGoper(
-                bikeId: bluetoothEquipment.equipment.id.id,
-              );
-              _trainingFlowData.postBikeGraph = true;
+              // await _bluetoothSharedPreferencesService.bluetoothCryptoBikeGoper(
+              //   bikeId: bluetoothEquipment.equipment.id.id,
+              // );
+              // _trainingFlowData.postBikeGraph = true;
               _bleBikeService.getIndoorBikeData(services);
               break;
             case BluetoothEquipmentType.treadmill:
               _bleTreadmillService.connectedTreadmill = bluetoothEquipment;
-              await _bluetoothSharedPreferencesService
-                  .bluetoothCryptoTreadmillBLE(
-                treadmillId: bluetoothEquipment.equipment.id.id,
-              );
-              _trainingFlowData.postTreadmillGraph = true;
+              // await _bluetoothSharedPreferencesService
+              //     .bluetoothCryptoTreadmillBLE(
+              //   treadmillId: bluetoothEquipment.equipment.id.id,
+              // );
+              // _trainingFlowData.postTreadmillGraph = true;
               _bleTreadmillService.getTreadmillData(services);
               break;
             case BluetoothEquipmentType.frequencyMeter:
               _bleFrequencyMeterService.connectedFrequencyMeter =
                   bluetoothEquipment;
-              _trainingFlowData.postBpmGraph = true;
-              int userAge = _trainingFlowData.userAge!;
-              double userWeight = _trainingFlowData.userWeight!;
-              await _bleFrequencyMeterService.getUserData(
-                services,
-                userAge,
-                userWeight,
-              );
+              // _trainingFlowData.postBpmGraph = true;
+              // int userAge = _trainingFlowData.userAge!;
+              // double userWeight = _trainingFlowData.userWeight!;
+              // await _bleFrequencyMeterService.getUserData(
+              //   services,
+              //   userAge,
+              //   userWeight,
+              // );
               await _bleFrequencyMeterService
                   .getFrequencyMeterMeasurement(services);
               break;
@@ -319,11 +325,11 @@ class BluetoothEquipmentBloc
     Bluetooth.treadmillConnected.value = TreadmillBleController(
         deviceConnected: false, openBox: true, openFooter: true);
     Bluetooth.bleOn.value = false;
-    _bikeKeiserCubit.cancelBikeKeiserBroadcastDetection();
-    _bikeKeiserCubit.deinitialize();
-    if (closingTraining) {
-      _bikeKeiserCubit.close();
-    }
+    // _bikeKeiserCubit.cancelBikeKeiserBroadcastDetection();
+    // _bikeKeiserCubit.deinitialize();
+    // if (closingTraining) {
+    //   _bikeKeiserCubit.close();
+    // }
     timer?.cancel();
   }
 
