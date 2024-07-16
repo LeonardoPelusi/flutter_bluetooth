@@ -1,7 +1,7 @@
 part of 'bluetooth_equipment_service.dart';
 
 class BluetoothBikeService {
-  static BluetoothBikeService get instance => BluetoothBikeService();
+  static BluetoothBikeService get _instance => BluetoothBikeService();
 
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? connectedBike;
@@ -40,7 +40,7 @@ class BluetoothBikeService {
     _bikeIndoorData = _fitnessMachineService.characteristics.firstWhere(
         (characteristic) =>
             characteristic.uuid ==
-            Guid('00002ad2-0000-1000-8000-00805f9b34fb'));
+            BluetoothEquipmentService.guids.bikeIndoorData);
 
     bikeCharacteristicStream = _bikeIndoorData.value.listen((value) {
       bikeData = value;

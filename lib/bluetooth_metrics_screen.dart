@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_equipment_model.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 
 class BluetoothMetricsScreen extends StatefulWidget {
   final BluetoothEquipmentModel bluetoothEquipment;

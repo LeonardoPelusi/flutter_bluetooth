@@ -5,6 +5,8 @@ abstract class BluetoothGuid {
 
   Guid get treadmillFitnessData;
 
+  Guid get bikeIndoorData;
+
   Guid get frequencyMeterService;
 
   Guid get frequencyMeterMeasurement;
@@ -31,6 +33,9 @@ class _BluetoothGuid implements BluetoothGuid {
 
   @override
   Guid get treadmillFitnessData => Guid('00002acd-0000-1000-8000-00805f9b34fb');
+
+  @override
+  Guid get bikeIndoorData => Guid('00002ad2-0000-1000-8000-00805f9b34fb');
 
   @override
   Guid get frequencyMeterService => Guid('0000180d-0000-1000-8000-00805f9b34fb');

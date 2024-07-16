@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_equipment_model.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 
 part 'bluetooth_bike_service.dart';
 part 'bluetooth_treadmill_service.dart';
@@ -17,11 +17,11 @@ class BluetoothEquipmentService {
   static BluetoothGuid get guids => _BluetoothGuid();
 
   // Equipments Services
-  BluetoothBikeService get bikeService => BluetoothBikeService.instance;
+  BluetoothBikeService get bikeService => BluetoothBikeService._instance;
   BluetoothTreadmillService get treadmillService =>
-      BluetoothTreadmillService.instance;
+      BluetoothTreadmillService._instance;
   BluetoothFrequencyMeterService get frequencyMeterService =>
-      BluetoothFrequencyMeterService.instance;
+      BluetoothFrequencyMeterService._instance;
 
   ValueNotifier<List<bool>> get connectedDevices => ValueNotifier([
         bikeService.connectedBike != null,
