@@ -1,15 +1,17 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
+import 'package:flutter_bluetooth/src/extension.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/bluetooth_helper.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_shared_preferences_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_equipment_enum.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bike_keiser_cubit/bike_keiser_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bike_keiser_broadcast_serializer.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_keiser_broadcast.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 
 part 'bluetooth_equipment_event.dart';
 part 'bluetooth_equipment_state.dart';
@@ -43,6 +45,9 @@ class BluetoothEquipmentBloc
       BluetoothEquipmentService.instance.treadmillService;
   final BluetoothFrequencyMeterService _bleFrequencyMeterService =
       BluetoothEquipmentService.instance.frequencyMeterService;
+
+  // Packages
+  final FlutterBluePlus _flutterBluePlus = FlutterBluePlus.instance;
 
   // Variables
   Timer? timer;
@@ -112,40 +117,53 @@ class BluetoothEquipmentBloc
     Emitter<BluetoothEquipmentState> emit,
   ) async {
     final BluetoothEquipmentModel bluetoothEquipment = event.bluetoothEquipment;
-    switch (event.bluetoothEquipment.equipmentType) {
-      case BluetoothEquipmentType.bikeKeiser:
-        Future.delayed(const Duration(milliseconds: 200), () {
-          Bluetooth.broadcastKeiser.value = true;
-          // cancelar broadcast anterior, se houver
-          // _bikeKeiserCubit.cancelBikeKeiserBroadcastDetection();
-          // // inicicar listen do broadcast da nova bike selecionada
-          // _bikeKeiserCubit.newBroadcastRequested();
-          // _bikeKeiserCubit.listenToBikeKeiserBroadcast(
-          //     bikeId: bluetoothEquipment.id);
-          // é necessário reiniciar o broadcast depois de 30min
-          timer?.cancel();
-          timer = Timer(const Duration(minutes: 26), () {
-            // _bikeKeiserCubit.listenToBikeKeiserBroadcast(
-            //   bikeId: bluetoothEquipment.id,
-            // );
-          });
-
-          _bleBikeService.disconnectBike();
-          _bleBikeService.connectedBike = bluetoothEquipment;
-          // _bluetoothSharedPreferencesService.bluetoothCryptoBikeKeiser(
-          //   bikeKeiserId: bluetoothEquipment.equipment.id.id,
-          // );
-          // _trainingFlowData.postBikeGraph = true;
-        });
-        break;
-      case BluetoothEquipmentType.bikeGoper:
-        _bleBikeService.disconnectBike();
-        break;
-      default:
-        break;
-    }
     emit(
       BluetoothEquipmentConnectedState(connectedEquipment: bluetoothEquipment),
+    );
+
+    _bleBikeService.disconnectBike();
+    _bleBikeService.connectedBike = bluetoothEquipment;
+    // _bluetoothSharedPreferencesService.bluetoothCryptoBikeKeiser(
+    //   bikeKeiserId: bluetoothEquipment.equipment.id.id,
+    // );
+    // _trainingFlowData.postBikeGraph = true;
+
+    // _flutterBluePlus.stopScan();
+
+    // await emit.onEach(
+    //   _flutterBluePlus.scanResults,
+    //   onData: (List<ScanResult> scanResults) async {
+
+    //   },
+    // );
+
+    _flutterBluePlus.scanResults.listen((scanResults) {
+      for (ScanResult scanResult in scanResults) {
+        if (scanResult.device.id == bluetoothEquipment.equipment.id) {
+          final Uint8List manufacturerData = scanResult
+              .advertisementData.manufacturerData.values.first
+              .asUint8List();
+          switch (event.bluetoothEquipment.equipmentType) {
+            case BluetoothEquipmentType.bikeKeiser:
+              final BikeKeiserBroadcast bikeKeiserBroadcast =
+                  BikeKeiserBroadcastSerializer.from(manufacturerData);
+              _bleBikeService.instaCadence.value = bikeKeiserBroadcast.cadence;
+              _bleBikeService.instaPower.value = bikeKeiserBroadcast.power;
+              _bleBikeService.resistanceLevel.value = bikeKeiserBroadcast.gear;
+              break;
+            case BluetoothEquipmentType.bikeGoper:
+              _bleBikeService.connectedBike = bluetoothEquipment;
+              break;
+
+            default:
+              break;
+          }
+        }
+      }
+    });
+
+    await _flutterBluePlus.startScan(
+      timeout: const Duration(minutes: 25),
     );
   }
 

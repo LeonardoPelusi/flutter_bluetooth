@@ -7,10 +7,10 @@ class BluetoothBikeService {
   BluetoothEquipmentModel? connectedBike;
 
   //Métricas que serão exibidas
-  static ValueNotifier<int> instaCadence = ValueNotifier<int>(0);
-  static ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
-  static ValueNotifier<int> resistanceLevel = ValueNotifier<int>(0);
-  static ValueNotifier<double> speed = ValueNotifier<double>(0);
+  ValueNotifier<int> instaCadence = ValueNotifier<int>(0);
+  ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
+  ValueNotifier<int> resistanceLevel = ValueNotifier<int>(0);
+  ValueNotifier<double> speed = ValueNotifier<double>(0);
 
   // Variáveis para a geração de graficos
   int powerBest = 0;

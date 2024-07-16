@@ -43,7 +43,6 @@ class Bluetooth {
 
   static ValueNotifier<int> cumulativePower = ValueNotifier<int>(0);
   static ValueNotifier<int> powerLength = ValueNotifier<int>(0);
-  static ValueNotifier<bool?> bleOn = ValueNotifier<bool?>(null);
 
   static ValueNotifier<bool> broadcastKeiser = ValueNotifier<bool>(false);
 

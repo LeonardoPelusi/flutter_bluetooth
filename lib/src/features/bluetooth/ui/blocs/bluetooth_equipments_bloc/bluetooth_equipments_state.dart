@@ -22,10 +22,8 @@ final class BluetoothEquipmentsListLoadingState
 
 final class BluetoothEquipmentsListAddEquipmentState
     extends BluetoothEquipmentsState {
-  final BluetoothEquipmentModel bluetoothEquipment;
-
   const BluetoothEquipmentsListAddEquipmentState({
-    required this.bluetoothEquipment,
+    required super.bluetoothEquipments,
   });
 
   @override

@@ -8,13 +8,11 @@ class BluetoothEquipmentModel extends Equatable {
   final String id;
   final BluetoothDevice equipment;
   final BluetoothEquipmentType equipmentType;
-  final Uint8List manufacturerData;
 
   const BluetoothEquipmentModel({
     required this.id,
     required this.equipment,
     required this.equipmentType,
-    required this.manufacturerData,
   });
 
   @override
@@ -23,7 +21,6 @@ class BluetoothEquipmentModel extends Equatable {
       id,
       equipment,
       equipmentType,
-      manufacturerData,
     ];
   }
 }

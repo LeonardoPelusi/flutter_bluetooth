@@ -4,14 +4,24 @@ import 'package:flutter_bluetooth/bluetooth_metrics_screen.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_bloc/bluetooth_equipments_bloc.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_status_cubit/bluetooth_status_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
   const BluetoothScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<BluetoothEquipmentsBloc>(
-      create: (_) => BluetoothEquipmentsBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<BluetoothStatusCubit>(
+          create: (_) => BluetoothStatusCubitImpl(),
+        ),
+        BlocProvider<BluetoothEquipmentsBloc>(
+          create: (context) => BluetoothEquipmentsBloc(
+            context.read<BluetoothStatusCubit>(),
+          ),
+        ),
+      ],
       child: const _BluetoothScreen(),
     );
   }
@@ -49,6 +59,8 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
       body: BlocBuilder<BluetoothEquipmentsBloc, BluetoothEquipmentsState>(
           bloc: _bluetoothEquipmentsBloc,
           builder: (context, state) {
+            print('state: $state');
+
             if (state is BluetoothEquipmentsInitialState) {
               return Center(
                 child: ElevatedButton(
@@ -69,6 +81,7 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
             if (state.bluetoothEquipments.isEmpty) {
               return Container();
             }
+
             return ListView.builder(
               // itemCount: state.bluetoothEquipments.length,
               padding: EdgeInsets.symmetric(
