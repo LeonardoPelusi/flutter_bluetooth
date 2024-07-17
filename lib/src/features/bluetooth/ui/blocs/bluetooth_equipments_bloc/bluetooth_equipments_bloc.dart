@@ -1,13 +1,10 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
-import 'package:flutter_bluetooth/src/extension.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_shared_preferences_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_status_cubit/bluetooth_status_cubit.dart';
-import 'package:meta/meta.dart';
 
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
@@ -47,7 +44,6 @@ class BluetoothEquipmentsBloc
   }
 
   final BluetoothStatusCubit _bluetoothStatusCubit;
-
   // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
 
   // Packages
@@ -57,14 +53,6 @@ class BluetoothEquipmentsBloc
   final BluetoothEquipmentService _bluetoothEquipmentService =
       BluetoothEquipmentService.instance;
 
-  // Bluetooth Services
-  final BluetoothBikeService _bleBikeService =
-      BluetoothEquipmentService.instance.bikeService;
-  final BluetoothTreadmillService _bleTreadmillService =
-      BluetoothEquipmentService.instance.treadmillService;
-  final BluetoothFrequencyMeterService _bleFrequencyMeterService =
-      BluetoothEquipmentService.instance.frequencyMeterService;
-
   // Scan Timeout Durations
   final Duration _backgroundScanTimeoutDuration = const Duration(seconds: 10);
   // final Duration _newScanTimeoutDuration = const Duration(seconds: 30);
@@ -73,11 +61,6 @@ class BluetoothEquipmentsBloc
   // List
   final List<BluetoothEquipmentModel> _equipmentList =
       <BluetoothEquipmentModel>[];
-  final List<BluetoothEquipmentModel> _bikeList = <BluetoothEquipmentModel>[];
-  final List<BluetoothEquipmentModel> _treadmillList =
-      <BluetoothEquipmentModel>[];
-  final List<BluetoothEquipmentModel> _frequencyMeterList =
-      <BluetoothEquipmentModel>[];
 
   // Validators
   // !TODO BLUETOOTH: Implementar variáveis de acordo com o equipamento ou ConnectFTMS
@@ -85,6 +68,24 @@ class BluetoothEquipmentsBloc
   final bool _isTreadmillBLE = true;
   final bool _isTreadmillUSB = false;
   final bool _isFrequencyMeter = true;
+
+  List<BluetoothEquipmentModel> get bikeList => _equipmentList
+      .where(
+        (equip) =>
+            equip.equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equip.equipmentType == BluetoothEquipmentType.bikeKeiser,
+      )
+      .toList();
+  List<BluetoothEquipmentModel> get treadmillList => _equipmentList
+      .where(
+        (equip) => equip.equipmentType == BluetoothEquipmentType.treadmill,
+      )
+      .toList();
+  List<BluetoothEquipmentModel> get frequencyMeterList => _equipmentList
+      .where(
+        (equip) => equip.equipmentType == BluetoothEquipmentType.frequencyMeter,
+      )
+      .toList();
 
   Future<void> _backgroundScan(
     BluetoothEquipmentsBackgroundScanEvent event,
@@ -102,12 +103,11 @@ class BluetoothEquipmentsBloc
     )
         .then((_) async {
       // Caso o usuário der stop no scan, não será necessário realizar esses processos
-      _populateList();
       if (_equipmentList.isNotEmpty) {
         add(BluetoothEquipmentsAutomacticConnectEvent());
       }
-      if ((_isBike && _bikeList.isEmpty) ||
-          (_isTreadmillBLE && _treadmillList.isEmpty)) {
+      if ((_isBike && bikeList.isEmpty) ||
+          (_isTreadmillBLE && treadmillList.isEmpty)) {
         add(BluetoothEquipmentsBackgroundScanEvent(
           retries: event.retries + 1,
         ));
@@ -119,7 +119,7 @@ class BluetoothEquipmentsBloc
     BluetoothEquipmentsNewScanEvent event,
     Emitter<BluetoothEquipmentsState> emit,
   ) async {
-    _clearList();
+    _equipmentList.clear();
     add(BluetoothEquipmentsListenScanEvent());
     await _flutterBluePlus
         .startScan(
@@ -131,7 +131,6 @@ class BluetoothEquipmentsBloc
     )
         .then((_) {
       // Caso o usuário der stop no scan, não será necessário realizar esses processos
-      _populateList();
       emit(BluetoothEquipmentsListLoadedState(
         bluetoothEquipments: _equipmentList,
       ));
@@ -147,7 +146,6 @@ class BluetoothEquipmentsBloc
     await emit.onEach(
       _flutterBluePlus.scanResults,
       onData: (List<ScanResult> results) {
-        print('onData');
         for (ScanResult result in results) {
           BluetoothDevice newDevice = result.device;
 
@@ -156,14 +154,38 @@ class BluetoothEquipmentsBloc
             device: newDevice,
           );
 
+          // final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
+          //   id: newId,
+          //   equipment: newDevice,
+          //   equipmentType:
+          //       (_isBike && BluetoothHelper.bikeValidation(newDevice))
+          //           ? BluetoothEquipmentType.bikeGoper
+          //           : _isTreadmillBLE &&
+          //                   BluetoothHelper.treadmillValidation(newDevice)
+          //               ? BluetoothHelper.frequencyMeterValidation(newDevice)
+          //                   ? BluetoothEquipmentType.frequencyMeter
+          //                   : BluetoothEquipmentType.treadmill
+          //               : BluetoothEquipmentType.undefined,
+          // );
+
+          // if (!_equipmentList.contains(newEquipment)) {
+          //   _equipmentList.add(newEquipment);
+          // }
+
           if (_isBike && BluetoothHelper.bikeValidation(newDevice)) {
+            final bool _isBikeKeiser = BluetoothHelper.bikeKeiserValidation(
+              newDevice,
+            );
+
             final BluetoothEquipmentModel bike = BluetoothEquipmentModel(
               id: newId,
               equipment: newDevice,
-              equipmentType: BluetoothEquipmentType.bikeGoper,
+              equipmentType: _isBikeKeiser
+                  ? BluetoothEquipmentType.bikeKeiser
+                  : BluetoothEquipmentType.bikeGoper,
             );
-            if (!_bikeList.contains(bike)) {
-              _bikeList.add(bike);
+            if (!_equipmentList.contains(bike)) {
+              _equipmentList.add(bike);
               if (event.isBackgroundScan) {
                 // !TODO BLUETOOTH: Implementar SharedPreferences
                 // if (_bluetoothSharedPreferencesService.bikeOnSharedPreferences) {
@@ -185,8 +207,8 @@ class BluetoothEquipmentsBloc
               equipment: newDevice,
               equipmentType: BluetoothEquipmentType.treadmill,
             );
-            if (!_treadmillList.contains(treadmill)) {
-              _treadmillList.add(treadmill);
+            if (!_equipmentList.contains(treadmill)) {
+              _equipmentList.add(treadmill);
               if (event.isBackgroundScan) {
                 // !TODO BLUETOOTH: Implementar SharedPreferences
                 // if (_bluetoothSharedPreferencesService
@@ -210,8 +232,8 @@ class BluetoothEquipmentsBloc
               equipment: newDevice,
               equipmentType: BluetoothEquipmentType.frequencyMeter,
             );
-            if (!_frequencyMeterList.contains(frequencyMeter)) {
-              _frequencyMeterList.add(frequencyMeter);
+            if (!_equipmentList.contains(frequencyMeter)) {
+              _equipmentList.add(frequencyMeter);
               if (!event.isBackgroundScan) {
                 emit(BluetoothEquipmentsListAddEquipmentState(
                   bluetoothEquipments: [
@@ -225,104 +247,25 @@ class BluetoothEquipmentsBloc
         }
       },
     );
-
-    // _scanStream =
-    //     _flutterBluePlus.scanResults.listen((List<ScanResult> results) {
-    //   print('flutter: bluetooth scan results: ${results.length}');
-    //   for (ScanResult result in results) {
-    //     final BluetoothDevice newDevice = result.device;
-    //     final Iterable<List<int>> manufacturerData =
-    //         result.advertisementData.manufacturerData.values;
-
-    //     final String newId = _bluetoothEquipmentService.getEquipmentId(
-    //       manufacturerData: manufacturerData,
-    //       device: newDevice,
-    //     );
-
-    //     if (_isBike && BluetoothHelper.bikeValidation(newDevice)) {
-    //       final bool _isBikeKeiser = BluetoothHelper.bikeKeiserValidation(
-    //         newDevice,
-    //       );
-
-    //       final BluetoothEquipmentModel bike = BluetoothEquipmentModel(
-    //         id: newId,
-    //         equipment: newDevice,
-    //         equipmentType: _isBikeKeiser
-    //             ? BluetoothEquipmentType.bikeKeiser
-    //             : BluetoothEquipmentType.bikeGoper,
-    //       );
-    //       if (!_bikeList.contains(bike)) {
-    //         _bikeList.add(bike);
-    //       }
-    //       if (event.isBackgroundScan) {
-    //         // !TODO BLUETOOTH: Implementar SharedPreferences
-    //         // if (_bluetoothSharedPreferencesService.bikeOnSharedPreferences) {
-    //         // _sharedPreferencesTryConnectWithEquipment(_bike);
-    //         // }
-    //       } else {
-    //         // emit(BluetoothEquipmentsListAddEquipmentState(
-    //         //   bluetoothEquipment: bike,
-    //         // ));
-    //       }
-    //     } else if (_isTreadmillBLE &&
-    //         BluetoothHelper.treadmillValidation(newDevice)) {
-    //       final BluetoothEquipmentModel treadmill = BluetoothEquipmentModel(
-    //         id: newId,
-    //         equipment: newDevice,
-    //         equipmentType: BluetoothEquipmentType.treadmill,
-    //       );
-    //       if (!_treadmillList.contains(treadmill)) {
-    //         _treadmillList.add(treadmill);
-    //       }
-    //       if (event.isBackgroundScan) {
-    //         // !TODO BLUETOOTH: Implementar SharedPreferences
-    //         // if (_bluetoothSharedPreferencesService
-    //         //     .haveTreadmillOnSharedPreferences) {
-
-    //         // _sharedPreferencesTryConnectWithEquipment(_treadmill);
-    //         // }
-    //       } else {
-    //         // emit(BluetoothEquipmentsListAddEquipmentState(
-    //         //   bluetoothEquipment: treadmill,
-    //         // ));
-    //       }
-    //     } else if (BluetoothHelper.frequencyMeterValidation(newDevice)) {
-    //       final BluetoothEquipmentModel frequencyMeter =
-    //           BluetoothEquipmentModel(
-    //         id: newId,
-    //         equipment: newDevice,
-    //         equipmentType: BluetoothEquipmentType.frequencyMeter,
-    //       );
-    //       if (!_frequencyMeterList.contains(frequencyMeter)) {
-    //         _frequencyMeterList.add(frequencyMeter);
-    //       }
-    //       if (!event.isBackgroundScan) {
-    //         // emit(BluetoothEquipmentsListAddEquipmentState(
-    //         //   bluetoothEquipment: frequencyMeter,
-    //         // ));
-    //       }
-    //     }
-    //   }
-    // });
   }
 
   Future<void> _automaticConnect(
     BluetoothEquipmentsAutomacticConnectEvent event,
     Emitter<BluetoothEquipmentsState> emit,
   ) async {
-    if (_bikeList.length == 1 && _treadmillList.isEmpty) {
-      _bikeList[0].equipment.connect();
-    } else if (_treadmillList.length == 1 && _bikeList.isEmpty) {
-      _treadmillList[0].equipment.connect();
+    if (bikeList.length == 1 && treadmillList.isEmpty) {
+      bikeList[0].equipment.connect();
+    } else if (treadmillList.length == 1 && bikeList.isEmpty) {
+      treadmillList[0].equipment.connect();
     }
 
-    if (_frequencyMeterList.length == 1) {
-      _frequencyMeterList[0].equipment.connect();
+    if (frequencyMeterList.length == 1) {
+      frequencyMeterList[0].equipment.connect();
     }
 
-    if (_bikeList.length > 1 ||
-        _treadmillList.length > 1 ||
-        _frequencyMeterList.length > 1) {
+    if (bikeList.length > 1 ||
+        treadmillList.length > 1 ||
+        frequencyMeterList.length > 1) {
       emit(BluetoothEquipmentsBackgroundListLoadedState(
         bluetoothEquipments: _equipmentList,
       ));
@@ -348,15 +291,7 @@ class BluetoothEquipmentsBloc
     Emitter<BluetoothEquipmentsState> emit,
   ) async {
     _equipmentList.clear();
-    _bikeList.clear();
-    _treadmillList.clear();
-    _frequencyMeterList.clear();
-    _bleBikeService.connectedBike?.equipment.disconnect();
-    _bleBikeService.disconnectBike();
-    _bleTreadmillService.connectedTreadmill?.equipment.disconnect();
-    _bleTreadmillService.disconnectTreadmill();
-    _bleFrequencyMeterService.connectedFrequencyMeter?.equipment.disconnect();
-    _bleFrequencyMeterService.disconnectFrequencyMeter();
+    _bluetoothEquipmentService.disconnect();
   }
 
   @override
@@ -375,8 +310,6 @@ class BluetoothEquipmentsBloc
   //   }
   // }
 
-  // Tratamento das Listas
-
   void disconnectBluetooth({bool closingTraining = true}) {
     Bluetooth.heartRateConnected.value =
         HeartRateBleController(deviceConnected: false, open: true);
@@ -389,21 +322,5 @@ class BluetoothEquipmentsBloc
     // if (closingTraining) {
     //   _bikeKeiserCubit.close();
     // }
-  }
-
-  void _populateList() {
-    _equipmentList.clear();
-
-    _equipmentList.addAll([
-      ..._bikeList,
-      ..._treadmillList,
-      ..._frequencyMeterList,
-    ]);
-  }
-
-  void _clearList() {
-    _bikeList.clear();
-    _treadmillList.clear();
-    _frequencyMeterList.clear();
   }
 }

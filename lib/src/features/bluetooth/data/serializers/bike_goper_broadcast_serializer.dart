@@ -1,8 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:flutter_bluetooth/helper.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_goper_broadcast.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
+part of 'serializers.dart';
 
 class BikeGoperBroadcastSerializer {
   static BikeGoperBroadcast from(Uint8List manufacturerData) {

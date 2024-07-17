@@ -1,7 +1,4 @@
-import 'dart:typed_data';
-
-import 'package:flutter_bluetooth/helper.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_keiser_broadcast.dart';
+part of 'serializers.dart';
 
 // !DOCUMENTATION:
 // -> BIKE KEISER: https://dev.keiser.com/mseries/direct/

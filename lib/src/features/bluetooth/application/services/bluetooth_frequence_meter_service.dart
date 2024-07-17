@@ -4,11 +4,11 @@ class BluetoothFrequencyMeterService {
   static BluetoothFrequencyMeterService get _instance =>
       BluetoothFrequencyMeterService();
 
+  final BleFrequencyMeterMetricsNotifier _bleFrequencyMeterMetricsNotifier =
+      BleFrequencyMeterMetricsNotifier.instance;
+
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? connectedFrequencyMeter;
-
-  //Métricas que serão exibidas
-  static ValueNotifier<int> bpmValue = ValueNotifier<int>(-1);
 
   int bpmMedia = 0;
   int bpmBest = 0;
@@ -77,12 +77,16 @@ class BluetoothFrequencyMeterService {
 
     _frequencyMeterCharacteristicStream =
         _frequencyMeterMeasurement!.value.listen((value) {
+      late int bpmValue;
       bpmData = value;
-      if (bpmData.length > 1) bpmValue.value = bpmData[1];
-      if (bpmValue.value != 0) {
-        if (bpmValue.value > bpmBest) bpmBest = bpmValue.value;
+      if (bpmData.length > 1) bpmValue = bpmData[1];
+      if (bpmValue != 0) {
+        if (bpmValue > bpmBest) bpmBest = bpmValue;
       }
+
+      _bleFrequencyMeterMetricsNotifier.updateMetrics(newBpm: bpmValue);
     });
+
     Future.delayed(const Duration(milliseconds: 1500));
     await _frequencyMeterMeasurement!.setNotifyValue(true);
   }
@@ -94,7 +98,7 @@ class BluetoothFrequencyMeterService {
 
   void _cleanFequencyMeterData() {
     connectedFrequencyMeter = null;
-    bpmValue.value = -1;
+    _bleFrequencyMeterMetricsNotifier.clearMetrics();
     bpmBest = 0;
     bpmMedia = 0;
     _frequencyMeterCharacteristicStream?.cancel();
@@ -102,6 +106,7 @@ class BluetoothFrequencyMeterService {
   }
 
   void disconnectFrequencyMeter() {
+    connectedFrequencyMeter?.equipment.disconnect();
     _clearUserData();
     _cleanFequencyMeterData();
   }

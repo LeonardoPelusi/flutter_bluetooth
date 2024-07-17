@@ -91,16 +91,28 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
               itemBuilder: (ctx, index) {
                 final bluetoothEquipment = state.bluetoothEquipments[index];
 
-                return BlocProvider<BluetoothEquipmentBloc>(
-                  create: (_) => BluetoothEquipmentBloc(),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: MediaQuery.of(context).size.height * 0.005,
+                return Column(
+                  children: [
+                    BlocProvider<BluetoothEquipmentBloc>(
+                      create: (_) => BluetoothEquipmentBloc(),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: MediaQuery.of(context).size.height * 0.005,
+                        ),
+                        child: BluetoothItemWidget(
+                          bluetoothEquipment: bluetoothEquipment,
+                        ),
+                      ),
                     ),
-                    child: BluetoothItemWidget(
-                      bluetoothEquipment: bluetoothEquipment,
-                    ),
-                  ),
+                    if (index ==
+                            state.bluetoothEquipments
+                                .indexOf(state.bluetoothEquipments.last) &&
+                        state is BluetoothEquipmentsListAddEquipmentState)
+                      Container(
+                        margin: const EdgeInsets.only(top: 20),
+                        child: const CircularProgressIndicator(),
+                      ),
+                  ],
                 );
               },
             );
@@ -127,11 +139,6 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
   void initState() {
     super.initState();
     _bluetoothEquipmentBloc = context.read<BluetoothEquipmentBloc>();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   @override

@@ -3,13 +3,11 @@ part of 'bluetooth_equipment_service.dart';
 class BluetoothTreadmillService {
   static BluetoothTreadmillService get _instance => BluetoothTreadmillService();
 
+  final BleTreadmillMetricsNotifier _bleTreadmillMetricsNotifier =
+      BleTreadmillMetricsNotifier.instance;
+
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? connectedTreadmill;
-
-  //Métricas que serão exibidas
-  ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
-  ValueNotifier<double> speed = ValueNotifier<double>(0);
-  ValueNotifier<double> inclination = ValueNotifier<double>(0);
 
   // Variáveis para a geração de graficos
   int powerBest = 0;
@@ -43,45 +41,52 @@ class BluetoothTreadmillService {
       int byte = 2;
 
       if (treadmillData.isNotEmpty) {
-        speed.value = ((treadmillData[byte + 1] << 8 | (treadmillData[byte]))
+        late double speed;
+        late double inclination;
+        late int instaPower;
+
+        speed = ((treadmillData[byte + 1] << 8 | (treadmillData[byte]))
                 .toDouble()) /
             100;
         byte += 2;
 
-        if (speed.value > speedBest) speedBest = speed.value;
+        if (speed > speedBest) speedBest = speed;
 
         if (treadmillData[0] & 0x04 == 0x04) {
           byte += 3;
         }
 
-        inclination.value = (treadmillData[byte].toDouble());
+        inclination = (treadmillData[byte].toDouble());
 
-        instaPower.value =
-            _powerForTreadmill(speed.value, inclination.value).round();
+        instaPower = _powerForTreadmill(speed, inclination).round();
 
-        if (instaPower.value != 0) {
-          if (instaPower.value > powerBest) powerBest = instaPower.value;
+        if (instaPower != 0) {
+          if (instaPower > powerBest) powerBest = instaPower;
         }
+
+        _bleTreadmillMetricsNotifier.updateMetrics(
+          newInstaPower: instaPower,
+          newSpeed: speed,
+          newInclination: inclination,
+        );
       }
     });
-    Future.delayed(Duration(milliseconds: 1500));
+    Future.delayed(const Duration(milliseconds: 1500));
     await _treadmillFitnessData.setNotifyValue(true);
   }
 
   void _cleanTreadmillData() {
     connectedTreadmill = null;
-    speed.value = 0;
-    inclination.value = 0;
-    instaPower.value = 0;
+    _bleTreadmillMetricsNotifier.clearMetrics();
     treadmillCharacteristicStream?.cancel();
     treadmillCharacteristicStream = null;
     treadmillData = [];
   }
 
   void disconnectTreadmill() {
+    connectedTreadmill?.equipment.disconnect();
     _cleanTreadmillData();
   }
-
 
   double _powerForTreadmill(double speed, double inclination) {
     double percentage = inclination / 100;

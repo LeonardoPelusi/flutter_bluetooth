@@ -3,14 +3,11 @@ part of 'bluetooth_equipment_service.dart';
 class BluetoothBikeService {
   static BluetoothBikeService get _instance => BluetoothBikeService();
 
+  final BleBikeMetricsNotifier _bleBikeMetricsNotifier =
+      BleBikeMetricsNotifier.instance;
+
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? connectedBike;
-
-  //Métricas que serão exibidas
-  ValueNotifier<int> instaCadence = ValueNotifier<int>(0);
-  ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
-  ValueNotifier<int> resistanceLevel = ValueNotifier<int>(0);
-  ValueNotifier<double> speed = ValueNotifier<double>(0);
 
   // Variáveis para a geração de graficos
   int powerBest = 0;
@@ -43,6 +40,11 @@ class BluetoothBikeService {
             BluetoothEquipmentService.guids.bikeIndoorData);
 
     bikeCharacteristicStream = _bikeIndoorData.value.listen((value) {
+      late int instaCadence;
+      late int instaPower;
+      late int resistanceLevel;
+      late double speed;
+
       bikeData = value;
       int byte = 2;
 
@@ -51,7 +53,7 @@ class BluetoothBikeService {
 
         if (bikeData[0] & 0x02 == 0x02) byte += 2;
 
-        instaCadence.value =
+        instaCadence =
             ((bikeData[byte + 1] << 8 | (bikeData[byte])) * cadenceResolution)
                 .floor();
 
@@ -62,7 +64,7 @@ class BluetoothBikeService {
         if (bikeData[0] & 0x10 == 0x10) byte += 2;
 
         if (bikeData[0] & 0x20 == 0x20) {
-          resistanceLevel.value = _calculateResistance(bikeData[byte]);
+          resistanceLevel = _calculateResistance(bikeData[byte]);
           byte += 2;
         }
 
@@ -70,33 +72,51 @@ class BluetoothBikeService {
         // devido a um pedido da equipe que cuida da Bike Goper e
         // em 27/jun/2024
         int detectedPower = (bikeData[byte + 1] << 8 | (bikeData[byte]));
-        instaPower.value = detectedPower <= 999 ? detectedPower : 999;
+        instaPower = detectedPower <= 999 ? detectedPower : 999;
 
-        if (instaCadence.value > cadenceBest) cadenceBest = instaCadence.value;
+        if (instaCadence > cadenceBest) cadenceBest = instaCadence;
 
         // calcular média de cadência
         cadenceLength++;
         cadenceMedia =
-            ((instaCadence.value + cumulativeCadence) / cadenceLength).round();
-        cumulativeCadence += instaCadence.value;
+            ((instaCadence + cumulativeCadence) / cadenceLength).round();
+        cumulativeCadence += instaCadence;
 
-        if (instaPower.value > powerBest) powerBest = instaPower.value;
-        speed.value = _calculateSpeed(instaPower.value);
+        if (instaPower > powerBest) powerBest = instaPower;
+        speed = _calculateSpeed(instaPower);
+
+        _bleBikeMetricsNotifier.updateMetrics(
+          newInstaCadence: instaCadence,
+          newInstaPower: instaPower,
+          newResistanceLevel: resistanceLevel,
+          newSpeed: speed,
+        );
       }
     });
     Future.delayed(const Duration(milliseconds: 1500));
     await _bikeIndoorData.setNotifyValue(true);
   }
 
+  void getBroadcastBikeKeiserData(Uint8List manufacturerData) {
+    final BikeKeiserBroadcast bikeKeiserBroadcast =
+        BikeKeiserBroadcastSerializer.from(manufacturerData);
+
+    _bleBikeMetricsNotifier.updateMetrics(
+      newInstaCadence: bikeKeiserBroadcast.cadence,
+      newInstaPower: bikeKeiserBroadcast.power,
+      newResistanceLevel: bikeKeiserBroadcast.gear,
+      // newSpeed: bikeKeiserBroadcast.speed,
+      newSpeed: 0,
+    );
+  }
+
   void cleanBikeData() {
     connectedBike = null;
-    instaPower.value = -1;
-    instaCadence.value = 0;
-    resistanceLevel.value = 0;
-    speed.value = 0;
+    _bleBikeMetricsNotifier.clearMetrics();
   }
 
   void disconnectBike() {
+    connectedBike?.equipment.disconnect();
     cleanBikeData();
   }
 

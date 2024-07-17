@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/serializers.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_keiser_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
 
 part 'bluetooth_bike_service.dart';
 part 'bluetooth_treadmill_service.dart';
@@ -46,5 +50,11 @@ class BluetoothEquipmentService {
       }
     }
     return newId;
+  }
+
+  void disconnect() {
+    bikeService.disconnectBike();
+    treadmillService.disconnectTreadmill();
+    frequencyMeterService.disconnectFrequencyMeter();
   }
 }
