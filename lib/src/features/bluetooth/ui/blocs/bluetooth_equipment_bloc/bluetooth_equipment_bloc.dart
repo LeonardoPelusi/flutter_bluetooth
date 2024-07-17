@@ -5,7 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
-import 'package:flutter_bluetooth/src/extension.dart';
+import 'package:flutter_bluetooth/extension.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/bluetooth_helper.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
@@ -43,9 +43,6 @@ class BluetoothEquipmentBloc
       BluetoothEquipmentService.instance.treadmillService;
   final BluetoothFrequencyMeterService _bleFrequencyMeterService =
       BluetoothEquipmentService.instance.frequencyMeterService;
-
-  // Packages
-  final FlutterBluePlus _flutterBluePlus = FlutterBluePlus.instance;
 
   // Variables
   Timer? timer;
@@ -126,28 +123,31 @@ class BluetoothEquipmentBloc
     // );
     // _trainingFlowData.postBikeGraph = true;
 
-    // _flutterBluePlus.stopScan();
+    // FlutterBluePlus.stopScan();
 
     // await emit.onEach(
-    //   _flutterBluePlus.scanResults,
+    //   FlutterBluePlus.scanResults,
     //   onData: (List<ScanResult> scanResults) async {
 
     //   },
     // );
 
-    _flutterBluePlus.scanResults.listen((scanResults) {
+    FlutterBluePlus.onScanResults.listen((scanResults) {
       for (ScanResult scanResult in scanResults) {
-        if (scanResult.device.id == bluetoothEquipment.equipment.id) {
+        if (scanResult.device.remoteId ==
+            bluetoothEquipment.equipment.remoteId) {
           final Uint8List manufacturerData = scanResult
               .advertisementData.manufacturerData.values.first
               .asUint8List();
-          print('SCAN RESULT: ${scanResult.advertisementData.manufacturerData.values.last}');
+
           switch (event.bluetoothEquipment.equipmentType) {
             case BluetoothEquipmentType.bikeKeiser:
+              _bleBikeService.connectedBike = bluetoothEquipment;
               _bleBikeService.getBroadcastBikeKeiserData(manufacturerData);
               break;
             case BluetoothEquipmentType.bikeGoper:
               _bleBikeService.connectedBike = bluetoothEquipment;
+              _bleBikeService.getBroadcastBikeGoperData(manufacturerData);
               break;
 
             default:
@@ -157,7 +157,7 @@ class BluetoothEquipmentBloc
       }
     });
 
-    await _flutterBluePlus.startScan(
+    await FlutterBluePlus.startScan(
       timeout: const Duration(minutes: 25),
     );
   }
@@ -196,71 +196,6 @@ class BluetoothEquipmentBloc
         }
       }
     }
-
-    // try {
-    //   await bluetoothEquipment.equipment.connect().timeout(
-    //     _directConnectionTimeoutDuration,
-    //     onTimeout: () async {
-    //       timeOut = true;
-
-    //       if (event.retries <= 2) {
-    //         //RETRY CONNECTION
-    //         switch (bluetoothEquipment.equipmentType) {
-    //           case BluetoothEquipmentType.bikeGoper:
-    //             if (bluetoothEquipment != _bleBikeService.connectedBike) {
-    //               add(BluetoothEquipmentDirectConnectEvent(
-    //                 bluetoothEquipment: bluetoothEquipment,
-    //                 retries: event.retries + 1,
-    //               ));
-    //             }
-    //             break;
-    //           case BluetoothEquipmentType.treadmill:
-    //             if (bluetoothEquipment !=
-    //                 _bleTreadmillService.connectedTreadmill) {
-    //               add(BluetoothEquipmentDirectConnectEvent(
-    //                 bluetoothEquipment: bluetoothEquipment,
-    //                 retries: event.retries + 1,
-    //               ));
-    //             }
-    //             break;
-    //           case BluetoothEquipmentType.frequencyMeter:
-    //             if (bluetoothEquipment !=
-    //                 _bleFrequencyMeterService.connectedFrequencyMeter) {
-    //               add(BluetoothEquipmentDirectConnectEvent(
-    //                 bluetoothEquipment: bluetoothEquipment,
-    //                 retries: event.retries + 1,
-    //               ));
-    //             }
-    //             break;
-    //           default:
-    //             break;
-    //         }
-    //       } else {
-    //         emit(BluetoothEquipmentErrorState(
-    //           message: 'Não foi possivel realizar a conexão',
-    //         ));
-    //       }
-    //     },
-    //   );
-    // } catch (e) {
-    //   error = true;
-    //   if (e == 'already_connected') {
-    //     emit(BluetoothEquipmentErrorState(
-    //       message: 'Dispositivo já conectado',
-    //     ));
-    //   } else {
-    //     emit(BluetoothEquipmentErrorState(
-    //       message: 'Não foi possivel realizar a conexão',
-    //     ));
-    //   }
-    //   rethrow;
-    // } finally {
-    //   if (!timeOut && !error) {
-    //     add(BluetoothEquipmentTrackEvent(
-    //       bluetoothEquipment: bluetoothEquipment,
-    //     ));
-    //   }
-    // }
   }
 
   void _trackEquipmentState(
@@ -270,10 +205,10 @@ class BluetoothEquipmentBloc
     final BluetoothEquipmentModel bluetoothEquipment = event.bluetoothEquipment;
 
     await emit.onEach(
-      bluetoothEquipment.equipment.state,
+      bluetoothEquipment.equipment.connectionState,
       onData: (state) async {
         switch (state) {
-          case BluetoothDeviceState.connected:
+          case BluetoothConnectionState.connected:
             emit(BluetoothEquipmentConnectedState(
               connectedEquipment: bluetoothEquipment,
             ));
@@ -315,7 +250,7 @@ class BluetoothEquipmentBloc
                 break;
             }
             break;
-          case BluetoothDeviceState.disconnected:
+          case BluetoothConnectionState.disconnected:
             add(BluetoothEquipmentDisconnectEvent(
               bluetoothEquipment: bluetoothEquipment,
             ));

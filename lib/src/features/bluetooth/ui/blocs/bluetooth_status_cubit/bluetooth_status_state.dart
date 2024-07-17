@@ -5,4 +5,5 @@ enum BluetoothStatusState {
   connected,
   disconnected,
   error,
+  unavailable,
 }

@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-  import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 part 'bluetooth_status_state.dart';
 
@@ -8,24 +8,27 @@ abstract class BluetoothStatusCubit extends Cubit<BluetoothStatusState> {
     listenToBluetoothStatus();
   }
 
-  void listenToBluetoothStatus();
+  Future<void> listenToBluetoothStatus();
 }
 
 class BluetoothStatusCubitImpl extends BluetoothStatusCubit {
-  // Packages
-  final FlutterBluePlus _flutterBluePlus = FlutterBluePlus.instance;
-
   @override
-  void listenToBluetoothStatus() {
-    _flutterBluePlus.state.listen((event) {
-      if (event == BluetoothState.on || event == BluetoothState.turningOn) {
-        emit(BluetoothStatusState.connected);
-      } else if (event == BluetoothState.turningOff ||
-          event == BluetoothState.off) {
-        emit(BluetoothStatusState.disconnected);
-      } else {
-        emit(BluetoothStatusState.error);
-      }
-    });
+  Future<void> listenToBluetoothStatus() async {
+    if (await FlutterBluePlus.isAvailable == false) {
+      emit(BluetoothStatusState.unavailable);
+      return;
+    } else {
+      FlutterBluePlus.adapterState.listen((BluetoothAdapterState state) {
+        if (state == BluetoothAdapterState.on ||
+            state == BluetoothAdapterState.turningOn) {
+          emit(BluetoothStatusState.connected);
+        } else if (state == BluetoothAdapterState.off ||
+            state == BluetoothAdapterState.turningOff) {
+          emit(BluetoothStatusState.disconnected);
+        } else {
+          emit(BluetoothStatusState.error);
+        }
+      });
+    }
   }
 }

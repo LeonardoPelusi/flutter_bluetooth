@@ -48,9 +48,6 @@ class BluetoothEquipmentsListBloc
   final BluetoothStatusCubit _bluetoothStatusCubit;
   // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
 
-  // Packages
-  final FlutterBluePlus _flutterBluePlus = FlutterBluePlus.instance;
-
   // Services
   final BluetoothEquipmentService _bluetoothEquipmentService =
       BluetoothEquipmentService.instance;
@@ -95,25 +92,23 @@ class BluetoothEquipmentsListBloc
   ) async {
     // await _cancelStream();
     add(BluetoothEquipmentsListListenScanEvent(isBackgroundScan: true));
-    await _flutterBluePlus
-        .startScan(
+    await FlutterBluePlus.startScan(
       timeout: _backgroundScanTimeoutDuration,
       withServices: event.retries >= 3
           ? []
           // : _bluetoothSharedPreferencesService.getServicesValidation(),
           : [],
-    )
-        .then((_) async {
+    ).then((_) async {
       // Caso o usuário der stop no scan, não será necessário realizar esses processos
-      if (_equipmentList.isNotEmpty) {
-        add(BluetoothEquipmentsListAutomacticConnectEvent());
-      }
-      if ((_isBike && bikeList.isEmpty) ||
-          (_isTreadmillBLE && treadmillList.isEmpty)) {
-        add(BluetoothEquipmentsListBackgroundScanEvent(
-          retries: event.retries + 1,
-        ));
-      }
+      // if (_equipmentList.isNotEmpty) {
+      //   add(BluetoothEquipmentsListAutomacticConnectEvent());
+      // }
+      // if ((_isBike && bikeList.isEmpty) ||
+      //     (_isTreadmillBLE && treadmillList.isEmpty)) {
+      //   add(BluetoothEquipmentsListBackgroundScanEvent(
+      //     retries: event.retries + 1,
+      //   ));
+      // }
     });
   }
 
@@ -123,19 +118,16 @@ class BluetoothEquipmentsListBloc
   ) async {
     _equipmentList.clear();
     add(BluetoothEquipmentsListListenScanEvent());
-    await _flutterBluePlus
-        .startScan(
+    await FlutterBluePlus.startScan(
       timeout: _newScanTimeoutDuration,
       withServices: event.isRetry
           ? []
           // : _bluetoothSharedPreferencesService.getServicesValidation(),
           : [],
-    )
-        .then((_) {
-      // Caso o usuário der stop no scan, não será necessário realizar esses processos
-      emit(BluetoothEquipmentsListLoadedState(
-        bluetoothEquipments: _equipmentList,
-      ));
+    ).then((_) {
+      // emit(BluetoothEquipmentsListLoadedState(
+      //   bluetoothEquipments: _equipmentList,
+      // ));
     });
   }
 
@@ -146,7 +138,7 @@ class BluetoothEquipmentsListBloc
     emit(BluetoothEquipmentsListLoadingState());
 
     await emit.onEach(
-      _flutterBluePlus.scanResults,
+      FlutterBluePlus.onScanResults,
       onData: (List<ScanResult> results) {
         for (ScanResult result in results) {
           BluetoothDevice newDevice = result.device;
@@ -175,12 +167,12 @@ class BluetoothEquipmentsListBloc
           // }
 
           if (_isBike && BluetoothHelper.isBike(newDevice)) {
-            final bool _isBikeKeiser = BluetoothHelper.isBikeKeiser(newDevice);
+            final bool isBikeKeiser = BluetoothHelper.isBikeKeiser(newDevice);
 
             final BluetoothEquipmentModel bike = BluetoothEquipmentModel(
               id: newId,
               equipment: newDevice,
-              equipmentType: _isBikeKeiser
+              equipmentType: isBikeKeiser
                   ? BluetoothEquipmentType.bikeKeiser
                   : BluetoothEquipmentType.bikeGoper,
             );
@@ -277,13 +269,9 @@ class BluetoothEquipmentsListBloc
     BluetoothEquipmentsListRemoveConnectedDevicesEvent event,
     Emitter<BluetoothEquipmentsListState> emit,
   ) async {
-    _flutterBluePlus.connectedDevices
-        .asStream()
-        .listen((List<BluetoothDevice> devices) {
-      for (BluetoothDevice device in devices) {
-        device.disconnect();
-      }
-    });
+    for (BluetoothDevice device in FlutterBluePlus.connectedDevices) {
+      device.disconnect();
+    }
   }
 
   Future<void> _disconnectBluetooth(

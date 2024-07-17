@@ -60,8 +60,7 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
               BluetoothEquipmentsListState>(
           bloc: _bluetoothEquipmentsListBloc,
           builder: (context, state) {
-            print('state: $state');
-
+            print(state);
             if (state is BluetoothEquipmentsListInitialState) {
               return Center(
                 child: ElevatedButton(
