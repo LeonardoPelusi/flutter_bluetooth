@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/bluetooth_metrics_screen.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_bloc/bluetooth_equipments_bloc.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_bloc/bluetooth_equipments_list_bloc.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_status_cubit/bluetooth_status_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
@@ -16,8 +16,8 @@ class BluetoothScreen extends StatelessWidget {
         BlocProvider<BluetoothStatusCubit>(
           create: (_) => BluetoothStatusCubitImpl(),
         ),
-        BlocProvider<BluetoothEquipmentsBloc>(
-          create: (context) => BluetoothEquipmentsBloc(
+        BlocProvider<BluetoothEquipmentsListBloc>(
+          create: (context) => BluetoothEquipmentsListBloc(
             context.read<BluetoothStatusCubit>(),
           ),
         ),
@@ -35,12 +35,12 @@ class _BluetoothScreen extends StatefulWidget {
 }
 
 class _BluetoothScreenState extends State<_BluetoothScreen> {
-  late final BluetoothEquipmentsBloc _bluetoothEquipmentsBloc;
+  late final BluetoothEquipmentsListBloc _bluetoothEquipmentsListBloc;
 
   @override
   void initState() {
     super.initState();
-    _bluetoothEquipmentsBloc = context.read<BluetoothEquipmentsBloc>();
+    _bluetoothEquipmentsListBloc = context.read<BluetoothEquipmentsListBloc>();
   }
 
   @override
@@ -50,23 +50,24 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
         title: Text('Bluetooth'),
         actions: [
           IconButton(
-            onPressed: () =>
-                _bluetoothEquipmentsBloc.add(BluetoothEquipmentsNewScanEvent()),
+            onPressed: () => _bluetoothEquipmentsListBloc
+                .add(BluetoothEquipmentsListNewScanEvent()),
             icon: const Icon(Icons.refresh),
           ),
         ],
       ),
-      body: BlocBuilder<BluetoothEquipmentsBloc, BluetoothEquipmentsState>(
-          bloc: _bluetoothEquipmentsBloc,
+      body: BlocBuilder<BluetoothEquipmentsListBloc,
+              BluetoothEquipmentsListState>(
+          bloc: _bluetoothEquipmentsListBloc,
           builder: (context, state) {
             print('state: $state');
 
-            if (state is BluetoothEquipmentsInitialState) {
+            if (state is BluetoothEquipmentsListInitialState) {
               return Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    _bluetoothEquipmentsBloc.add(
-                      BluetoothEquipmentsNewScanEvent(),
+                    _bluetoothEquipmentsListBloc.add(
+                      BluetoothEquipmentsListNewScanEvent(),
                     );
                   },
                   child: const Text('Start Scan'),

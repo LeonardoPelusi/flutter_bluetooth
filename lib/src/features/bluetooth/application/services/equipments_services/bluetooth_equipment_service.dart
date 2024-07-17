@@ -14,7 +14,7 @@ part 'bluetooth_bike_service.dart';
 part 'bluetooth_treadmill_service.dart';
 part 'bluetooth_frequence_meter_service.dart';
 
-part '../bluetooth_guid.dart';
+part '../../bluetooth_guid.dart';
 
 class BluetoothEquipmentService {
   static final BluetoothEquipmentService instance = BluetoothEquipmentService();

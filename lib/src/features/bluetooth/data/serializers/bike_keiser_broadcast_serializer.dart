@@ -23,8 +23,7 @@ class BikeKeiserBroadcastSerializer
       final cadence =
           parseHexToInt(manufacturerData[7], manufacturerData[6]) * 0.1;
       final power = parseHexToInt(manufacturerData[11], manufacturerData[10]);
-      // final gear = manufacturerData[18];
-      final gear = manufacturerData[16];
+      final gear = manufacturerData[18];
       return BikeKeiserBroadcast(
         id: id,
         cadence: cadence.round(),

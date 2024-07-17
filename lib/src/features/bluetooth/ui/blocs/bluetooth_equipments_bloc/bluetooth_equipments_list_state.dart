@@ -1,27 +1,27 @@
-part of 'bluetooth_equipments_bloc.dart';
+part of 'bluetooth_equipments_list_bloc.dart';
 
 @immutable
-sealed class BluetoothEquipmentsState extends Equatable {
+sealed class BluetoothEquipmentsListState extends Equatable {
   final List<BluetoothEquipmentModel> bluetoothEquipments;
 
-  const BluetoothEquipmentsState({
+  const BluetoothEquipmentsListState({
     this.bluetoothEquipments = const [],
   });
 }
 
-final class BluetoothEquipmentsInitialState extends BluetoothEquipmentsState {
+final class BluetoothEquipmentsListInitialState extends BluetoothEquipmentsListState {
   @override
   List<Object?> get props => [bluetoothEquipments];
 }
 
 final class BluetoothEquipmentsListLoadingState
-    extends BluetoothEquipmentsState {
+    extends BluetoothEquipmentsListState {
   @override
   List<Object?> get props => [bluetoothEquipments];
 }
 
 final class BluetoothEquipmentsListAddEquipmentState
-    extends BluetoothEquipmentsState {
+    extends BluetoothEquipmentsListState {
   const BluetoothEquipmentsListAddEquipmentState({
     required super.bluetoothEquipments,
   });
@@ -31,7 +31,7 @@ final class BluetoothEquipmentsListAddEquipmentState
 }
 
 final class BluetoothEquipmentsBackgroundListLoadedState
-    extends BluetoothEquipmentsState {
+    extends BluetoothEquipmentsListState {
   const BluetoothEquipmentsBackgroundListLoadedState({
     required super.bluetoothEquipments,
   });
@@ -41,7 +41,7 @@ final class BluetoothEquipmentsBackgroundListLoadedState
 }
 
 final class BluetoothEquipmentsListLoadedState
-    extends BluetoothEquipmentsState {
+    extends BluetoothEquipmentsListState {
   const BluetoothEquipmentsListLoadedState({
     required super.bluetoothEquipments,
   });

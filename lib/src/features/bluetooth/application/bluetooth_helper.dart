@@ -1,20 +1,19 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 
 abstract class BluetoothHelper {
   static List<Guid> servicesFilterList() {
     return [
       // User Data
-      Guid('0000181c-0000-1000-8000-00805f9b34fb'),
+      BluetoothEquipmentService.guids.userDataService,
       // FitnessMachine - Bike & Treadmill
-      Guid('00001826-0000-1000-8000-00805f9b34fb'),
-      //  Ziyou
-      Guid('00001816-0000-1000-8000-00805f9b34fb'),
+      BluetoothEquipmentService.guids.fitnessMachineService,
       // Frequency Meter
-      Guid('0000180d-0000-1000-8000-00805f9b34fb'),
+      BluetoothEquipmentService.guids.frequencyMeterService,
     ];
   }
 
-  static bool treadmillValidation(BluetoothDevice device) {
+  static bool isTreadmill(BluetoothDevice device) {
     if (device.name.contains('i-Power+') ||
         device.name.contains('EQI-Treadmill') ||
         device.name.contains('Run')) {
@@ -23,28 +22,28 @@ abstract class BluetoothHelper {
     return false;
   }
 
-  static bool frequencyMeterValidation(BluetoothDevice device) {
+  static bool isFrequencyMeter(BluetoothDevice device) {
     if (device.name == 'mbeat') {
       return true;
     }
     return false;
   }
 
-  static bool bikeValidation(BluetoothDevice device) {
-    if (_bikeGoperValidation(device) || bikeKeiserValidation(device)) {
+  static bool isBike(BluetoothDevice device) {
+    if (_isBikeGoper(device) || isBikeKeiser(device)) {
       return true;
     }
     return false;
   }
 
-  static bool _bikeGoperValidation(BluetoothDevice device) {
+  static bool _isBikeGoper(BluetoothDevice device) {
     if (device.name.contains('Goper Bike') || device.name.contains('BIKE-')) {
       return true;
     }
     return false;
   }
 
-  static bool bikeKeiserValidation(BluetoothDevice device) {
+  static bool isBikeKeiser(BluetoothDevice device) {
     if (device.name.contains('M3')) return true;
     return false;
   }

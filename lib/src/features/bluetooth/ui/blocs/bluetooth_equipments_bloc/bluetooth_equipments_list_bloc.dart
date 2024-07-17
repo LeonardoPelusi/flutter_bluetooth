@@ -6,39 +6,41 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_status_cubit/bluetooth_status_cubit.dart';
 
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/bluetooth_helper.dart';
 
-part 'bluetooth_equipments_event.dart';
-part 'bluetooth_equipments_state.dart';
+part 'bluetooth_equipments_list_event.dart';
+part 'bluetooth_equipments_list_state.dart';
 
-class BluetoothEquipmentsBloc
-    extends Bloc<BluetoothEquipmentsEvent, BluetoothEquipmentsState> {
-  BluetoothEquipmentsBloc(
+class BluetoothEquipmentsListBloc
+    extends Bloc<BluetoothEquipmentsListEvent, BluetoothEquipmentsListState> {
+  BluetoothEquipmentsListBloc(
     this._bluetoothStatusCubit,
     //!TODO Adicionar bluetooth shared preferences service
     // this._bluetoothSharedPreferencesService,
-  ) : super(BluetoothEquipmentsInitialState()) {
-    on<BluetoothEquipmentsBackgroundScanEvent>(_backgroundScan);
-    on<BluetoothEquipmentsNewScanEvent>(_newScan);
-    on<BluetoothEquipmentsListenScanEvent>(_listenScan);
-    on<BluetoothEquipmentsAutomacticConnectEvent>(_automaticConnect);
-    on<BluetoothEquipmentsRemoveConnectedDevicesEvent>(_removeConnectedDevices);
-    on<BluetoothEquipmentsDisconnectBluetoothEvent>(_disconnectBluetooth);
+  ) : super(BluetoothEquipmentsListInitialState()) {
+    on<BluetoothEquipmentsListBackgroundScanEvent>(_backgroundScan);
+    on<BluetoothEquipmentsListNewScanEvent>(_newScan);
+    on<BluetoothEquipmentsListListenScanEvent>(_listenScan);
+    on<BluetoothEquipmentsListAutomacticConnectEvent>(_automaticConnect);
+    on<BluetoothEquipmentsListRemoveConnectedDevicesEvent>(
+        _removeConnectedDevices);
+    on<BluetoothEquipmentsListDisconnectBluetoothEvent>(_disconnectBluetooth);
 
     _bluetoothStatusCubit.stream.listen((event) {
       if (event == BluetoothStatusState.connected) {
         // Caso o equipamento seja uma esteira-usb não será necessário
         // realizar esses processos
         // if (!_isTreadmillUSB) {
-        add(BluetoothEquipmentsRemoveConnectedDevicesEvent());
+        add(BluetoothEquipmentsListRemoveConnectedDevicesEvent());
         //   add(BluetoothEquipmentsBackgroundScanEvent());
         // }
       } else if (event == BluetoothStatusState.disconnected) {
-        add(BluetoothEquipmentsDisconnectBluetoothEvent(closeTraining: false));
+        add(BluetoothEquipmentsListDisconnectBluetoothEvent(
+            closeTraining: false));
       }
     });
   }
@@ -88,11 +90,11 @@ class BluetoothEquipmentsBloc
       .toList();
 
   Future<void> _backgroundScan(
-    BluetoothEquipmentsBackgroundScanEvent event,
-    Emitter<BluetoothEquipmentsState> emit,
+    BluetoothEquipmentsListBackgroundScanEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     // await _cancelStream();
-    add(BluetoothEquipmentsListenScanEvent(isBackgroundScan: true));
+    add(BluetoothEquipmentsListListenScanEvent(isBackgroundScan: true));
     await _flutterBluePlus
         .startScan(
       timeout: _backgroundScanTimeoutDuration,
@@ -104,11 +106,11 @@ class BluetoothEquipmentsBloc
         .then((_) async {
       // Caso o usuário der stop no scan, não será necessário realizar esses processos
       if (_equipmentList.isNotEmpty) {
-        add(BluetoothEquipmentsAutomacticConnectEvent());
+        add(BluetoothEquipmentsListAutomacticConnectEvent());
       }
       if ((_isBike && bikeList.isEmpty) ||
           (_isTreadmillBLE && treadmillList.isEmpty)) {
-        add(BluetoothEquipmentsBackgroundScanEvent(
+        add(BluetoothEquipmentsListBackgroundScanEvent(
           retries: event.retries + 1,
         ));
       }
@@ -116,11 +118,11 @@ class BluetoothEquipmentsBloc
   }
 
   Future<void> _newScan(
-    BluetoothEquipmentsNewScanEvent event,
-    Emitter<BluetoothEquipmentsState> emit,
+    BluetoothEquipmentsListNewScanEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     _equipmentList.clear();
-    add(BluetoothEquipmentsListenScanEvent());
+    add(BluetoothEquipmentsListListenScanEvent());
     await _flutterBluePlus
         .startScan(
       timeout: _newScanTimeoutDuration,
@@ -138,8 +140,8 @@ class BluetoothEquipmentsBloc
   }
 
   Future<void> _listenScan(
-    BluetoothEquipmentsListenScanEvent event,
-    Emitter<BluetoothEquipmentsState> emit,
+    BluetoothEquipmentsListListenScanEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     emit(BluetoothEquipmentsListLoadingState());
 
@@ -172,10 +174,8 @@ class BluetoothEquipmentsBloc
           //   _equipmentList.add(newEquipment);
           // }
 
-          if (_isBike && BluetoothHelper.bikeValidation(newDevice)) {
-            final bool _isBikeKeiser = BluetoothHelper.bikeKeiserValidation(
-              newDevice,
-            );
+          if (_isBike && BluetoothHelper.isBike(newDevice)) {
+            final bool _isBikeKeiser = BluetoothHelper.isBikeKeiser(newDevice);
 
             final BluetoothEquipmentModel bike = BluetoothEquipmentModel(
               id: newId,
@@ -201,7 +201,7 @@ class BluetoothEquipmentsBloc
               }
             }
           } else if (_isTreadmillBLE &&
-              BluetoothHelper.treadmillValidation(newDevice)) {
+              BluetoothHelper.isTreadmill(newDevice)) {
             final BluetoothEquipmentModel treadmill = BluetoothEquipmentModel(
               id: newId,
               equipment: newDevice,
@@ -225,7 +225,7 @@ class BluetoothEquipmentsBloc
                 ));
               }
             }
-          } else if (BluetoothHelper.frequencyMeterValidation(newDevice)) {
+          } else if (BluetoothHelper.isFrequencyMeter(newDevice)) {
             final BluetoothEquipmentModel frequencyMeter =
                 BluetoothEquipmentModel(
               id: newId,
@@ -250,8 +250,8 @@ class BluetoothEquipmentsBloc
   }
 
   Future<void> _automaticConnect(
-    BluetoothEquipmentsAutomacticConnectEvent event,
-    Emitter<BluetoothEquipmentsState> emit,
+    BluetoothEquipmentsListAutomacticConnectEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     if (bikeList.length == 1 && treadmillList.isEmpty) {
       bikeList[0].equipment.connect();
@@ -274,8 +274,8 @@ class BluetoothEquipmentsBloc
 
   // Caso haja algum dispositivo ainda conectado (preso), retirar
   Future<void> _removeConnectedDevices(
-    BluetoothEquipmentsRemoveConnectedDevicesEvent event,
-    Emitter<BluetoothEquipmentsState> emit,
+    BluetoothEquipmentsListRemoveConnectedDevicesEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     _flutterBluePlus.connectedDevices
         .asStream()
@@ -287,8 +287,8 @@ class BluetoothEquipmentsBloc
   }
 
   Future<void> _disconnectBluetooth(
-    BluetoothEquipmentsDisconnectBluetoothEvent event,
-    Emitter<BluetoothEquipmentsState> emit,
+    BluetoothEquipmentsListDisconnectBluetoothEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     _equipmentList.clear();
     _bluetoothEquipmentService.disconnect();
@@ -296,7 +296,7 @@ class BluetoothEquipmentsBloc
 
   @override
   Future<void> close() async {
-    add(BluetoothEquipmentsDisconnectBluetoothEvent());
+    add(BluetoothEquipmentsListDisconnectBluetoothEvent());
     super.close();
   }
 

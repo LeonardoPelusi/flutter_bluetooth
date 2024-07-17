@@ -7,10 +7,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
 import 'package:flutter_bluetooth/src/extension.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/bluetooth_helper.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bike_keiser_broadcast_serializer.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_keiser_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 
 part 'bluetooth_equipment_event.dart';
@@ -68,7 +66,7 @@ class BluetoothEquipmentBloc
     ));
 
     // !TODO implementar lógica broadcast
-    if (BluetoothHelper.bikeKeiserValidation(bluetoothEquipment.equipment)) {
+    if (BluetoothHelper.isBikeKeiser(bluetoothEquipment.equipment)) {
       add(BluetoothEquipmentBroadcastConnectEvent(
         bluetoothEquipment: bluetoothEquipment,
       ));
@@ -143,13 +141,10 @@ class BluetoothEquipmentBloc
           final Uint8List manufacturerData = scanResult
               .advertisementData.manufacturerData.values.first
               .asUint8List();
+          print('SCAN RESULT: ${scanResult.advertisementData.manufacturerData.values.last}');
           switch (event.bluetoothEquipment.equipmentType) {
             case BluetoothEquipmentType.bikeKeiser:
-              final BikeKeiserBroadcast bikeKeiserBroadcast =
-                  BikeKeiserBroadcastSerializer.from(manufacturerData);
-              _bleBikeService.instaCadence.value = bikeKeiserBroadcast.cadence;
-              _bleBikeService.instaPower.value = bikeKeiserBroadcast.power;
-              _bleBikeService.resistanceLevel.value = bikeKeiserBroadcast.gear;
+              _bleBikeService.getBroadcastBikeKeiserData(manufacturerData);
               break;
             case BluetoothEquipmentType.bikeGoper:
               _bleBikeService.connectedBike = bluetoothEquipment;
@@ -173,73 +168,99 @@ class BluetoothEquipmentBloc
   ) async {
     final BluetoothEquipmentModel bluetoothEquipment = event.bluetoothEquipment;
 
-    bool timeOut = false;
-    bool error = false;
+    // bool timeOut = false;
+    // bool error = false;
 
     try {
-      await bluetoothEquipment.equipment.connect().timeout(
-        _directConnectionTimeoutDuration,
-        onTimeout: () async {
-          timeOut = true;
-
-          if (event.retries <= 2) {
-            //RETRY CONNECTION
-            switch (bluetoothEquipment.equipmentType) {
-              case BluetoothEquipmentType.bikeGoper:
-                if (bluetoothEquipment != _bleBikeService.connectedBike) {
-                  add(BluetoothEquipmentDirectConnectEvent(
-                    bluetoothEquipment: bluetoothEquipment,
-                    retries: event.retries + 1,
-                  ));
-                }
-                break;
-              case BluetoothEquipmentType.treadmill:
-                if (bluetoothEquipment !=
-                    _bleTreadmillService.connectedTreadmill) {
-                  add(BluetoothEquipmentDirectConnectEvent(
-                    bluetoothEquipment: bluetoothEquipment,
-                    retries: event.retries + 1,
-                  ));
-                }
-                break;
-              case BluetoothEquipmentType.frequencyMeter:
-                if (bluetoothEquipment !=
-                    _bleFrequencyMeterService.connectedFrequencyMeter) {
-                  add(BluetoothEquipmentDirectConnectEvent(
-                    bluetoothEquipment: bluetoothEquipment,
-                    retries: event.retries + 1,
-                  ));
-                }
-                break;
-              default:
-                break;
-            }
-          } else {
-            emit(BluetoothEquipmentErrorState(
-              message: 'Não foi possivel realizar a conexão',
-            ));
-          }
-        },
+      await bluetoothEquipment.equipment.connect(
+        timeout: _directConnectionTimeoutDuration,
       );
+      add(BluetoothEquipmentTrackEvent(
+        bluetoothEquipment: bluetoothEquipment,
+      ));
     } catch (e) {
-      error = true;
       if (e == 'already_connected') {
         emit(BluetoothEquipmentErrorState(
           message: 'Dispositivo já conectado',
         ));
       } else {
-        emit(BluetoothEquipmentErrorState(
-          message: 'Não foi possivel realizar a conexão',
-        ));
-      }
-      rethrow;
-    } finally {
-      if (!timeOut && !error) {
-        add(BluetoothEquipmentTrackEvent(
-          bluetoothEquipment: bluetoothEquipment,
-        ));
+        if (event.retries <= 2) {
+          add(BluetoothEquipmentDirectConnectEvent(
+            bluetoothEquipment: bluetoothEquipment,
+            retries: event.retries + 1,
+          ));
+        } else {
+          emit(BluetoothEquipmentErrorState(
+            message: 'Não foi possivel realizar a conexão',
+          ));
+        }
       }
     }
+
+    // try {
+    //   await bluetoothEquipment.equipment.connect().timeout(
+    //     _directConnectionTimeoutDuration,
+    //     onTimeout: () async {
+    //       timeOut = true;
+
+    //       if (event.retries <= 2) {
+    //         //RETRY CONNECTION
+    //         switch (bluetoothEquipment.equipmentType) {
+    //           case BluetoothEquipmentType.bikeGoper:
+    //             if (bluetoothEquipment != _bleBikeService.connectedBike) {
+    //               add(BluetoothEquipmentDirectConnectEvent(
+    //                 bluetoothEquipment: bluetoothEquipment,
+    //                 retries: event.retries + 1,
+    //               ));
+    //             }
+    //             break;
+    //           case BluetoothEquipmentType.treadmill:
+    //             if (bluetoothEquipment !=
+    //                 _bleTreadmillService.connectedTreadmill) {
+    //               add(BluetoothEquipmentDirectConnectEvent(
+    //                 bluetoothEquipment: bluetoothEquipment,
+    //                 retries: event.retries + 1,
+    //               ));
+    //             }
+    //             break;
+    //           case BluetoothEquipmentType.frequencyMeter:
+    //             if (bluetoothEquipment !=
+    //                 _bleFrequencyMeterService.connectedFrequencyMeter) {
+    //               add(BluetoothEquipmentDirectConnectEvent(
+    //                 bluetoothEquipment: bluetoothEquipment,
+    //                 retries: event.retries + 1,
+    //               ));
+    //             }
+    //             break;
+    //           default:
+    //             break;
+    //         }
+    //       } else {
+    //         emit(BluetoothEquipmentErrorState(
+    //           message: 'Não foi possivel realizar a conexão',
+    //         ));
+    //       }
+    //     },
+    //   );
+    // } catch (e) {
+    //   error = true;
+    //   if (e == 'already_connected') {
+    //     emit(BluetoothEquipmentErrorState(
+    //       message: 'Dispositivo já conectado',
+    //     ));
+    //   } else {
+    //     emit(BluetoothEquipmentErrorState(
+    //       message: 'Não foi possivel realizar a conexão',
+    //     ));
+    //   }
+    //   rethrow;
+    // } finally {
+    //   if (!timeOut && !error) {
+    //     add(BluetoothEquipmentTrackEvent(
+    //       bluetoothEquipment: bluetoothEquipment,
+    //     ));
+    //   }
+    // }
   }
 
   void _trackEquipmentState(
