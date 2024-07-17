@@ -99,13 +99,26 @@ class BluetoothBikeService {
 
   void getBroadcastBikeKeiserData(Uint8List manufacturerData) {
     final BikeKeiserBroadcast bikeKeiserBroadcast =
-        BikeKeiserBroadcastSerializer.from(manufacturerData);
+        bikeKeiserBroadcastSerializer.from(manufacturerData);
 
     _bleBikeMetricsNotifier.updateMetrics(
       newInstaCadence: bikeKeiserBroadcast.cadence,
       newInstaPower: bikeKeiserBroadcast.power,
       newResistanceLevel: bikeKeiserBroadcast.gear,
       // newSpeed: bikeKeiserBroadcast.speed,
+      newSpeed: 0,
+    );
+  }
+
+  void getBroadcastBikeGoperData(Uint8List manufacturerData) {
+    final BikeGoperBroadcast bikeGoperBroadcast =
+        bikeGoperBroadcastSerializer.from(manufacturerData);
+
+    _bleBikeMetricsNotifier.updateMetrics(
+      newInstaCadence: bikeGoperBroadcast.cadence,
+      newInstaPower: bikeGoperBroadcast.power,
+      newResistanceLevel: bikeGoperBroadcast.resistance,
+      // newSpeed: bikeGoperBroadcast.speed,
       newSpeed: 0,
     );
   }

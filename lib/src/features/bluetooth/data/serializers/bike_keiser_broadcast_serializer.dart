@@ -1,10 +1,12 @@
-part of 'serializers.dart';
+part of 'bluetooth_serializer.dart';
 
 // !DOCUMENTATION:
 // -> BIKE KEISER: https://dev.keiser.com/mseries/direct/
 
-class BikeKeiserBroadcastSerializer {
-  static BikeKeiserBroadcast from(Uint8List manufacturerData) {
+class BikeKeiserBroadcastSerializer
+    implements BluetoothSerializer<BikeKeiserBroadcast, Uint8List> {
+  @override
+  BikeKeiserBroadcast from(Uint8List manufacturerData) {
     try {
       final kcal = parseHexToInt(manufacturerData[13], manufacturerData[12]);
       final id = manufacturerData[5].toString();
@@ -36,12 +38,13 @@ class BikeKeiserBroadcastSerializer {
     }
   }
 
-  static bool _isRealTimeValues(int dataType) {
-    return dataType == 0 || (dataType >= 128 && dataType <= 227);
+  @override
+  to(BikeKeiserBroadcast object) {
+    throw UnimplementedError();
   }
 
-  static to(BikeKeiserBroadcast object) {
-    throw UnimplementedError();
+  static bool _isRealTimeValues(int dataType) {
+    return dataType == 0 || (dataType >= 128 && dataType <= 227);
   }
 }
 

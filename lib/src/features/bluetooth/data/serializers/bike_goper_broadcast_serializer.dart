@@ -1,7 +1,9 @@
-part of 'serializers.dart';
+part of 'bluetooth_serializer.dart';
 
-class BikeGoperBroadcastSerializer {
-  static BikeGoperBroadcast from(Uint8List manufacturerData) {
+class BikeGoperBroadcastSerializer
+    implements BluetoothSerializer<BikeGoperBroadcast, Uint8List> {
+  @override
+  BikeGoperBroadcast from(Uint8List manufacturerData) {
     final id = manufacturerData[2];
     final cadence = parseHexToInt(manufacturerData[5], manufacturerData[6]);
     final power = parseHexToInt(manufacturerData[3], manufacturerData[4]);
@@ -15,9 +17,10 @@ class BikeGoperBroadcastSerializer {
     return result;
   }
 
-  static BluetoothEquipmentModel to(BikeGoperBroadcast model) {
+  @override
+  to(BikeGoperBroadcast object) {
     throw UnimplementedError();
   }
 }
 
-final bikeGoperBroadcastsSerializer = BikeGoperBroadcastSerializer();
+final bikeGoperBroadcastSerializer = BikeGoperBroadcastSerializer();
