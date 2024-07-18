@@ -20,7 +20,6 @@ class BluetoothEquipmentBloc
       //!TODO implementar shared preferences
       // this._bluetoothSharedPreferencesService,
       // this._trainingFlowData,
-      // this._bikeKeiserCubit,
       )
       : super(BluetoothEquipmentInitialState()) {
     on<BluetoothEquipmentConnectEvent>(_connectEquipment);
@@ -34,7 +33,6 @@ class BluetoothEquipmentBloc
   // Services
   // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
   // final TrainingFlowData _trainingFlowData;
-  // final BikeKeiserCubit _bikeKeiserCubit;
 
   // Bluetooth Services
   final BluetoothBikeService _bleBikeService =
@@ -132,7 +130,7 @@ class BluetoothEquipmentBloc
     //   },
     // );
 
-    FlutterBluePlus.onScanResults.listen((scanResults) {
+    var subscription = FlutterBluePlus.onScanResults.listen((scanResults) {
       for (ScanResult scanResult in scanResults) {
         if (scanResult.device.remoteId ==
             bluetoothEquipment.equipment.remoteId) {
@@ -157,9 +155,20 @@ class BluetoothEquipmentBloc
       }
     });
 
+    FlutterBluePlus.cancelWhenScanComplete(subscription);
+
+    // é necessário reiniciar o broadcast depois de 30min
     await FlutterBluePlus.startScan(
       timeout: const Duration(minutes: 25),
     );
+
+    await FlutterBluePlus.isScanning.where((val) => val == false).first.then(
+          (_) => add(
+            BluetoothEquipmentBroadcastConnectEvent(
+              bluetoothEquipment: bluetoothEquipment,
+            ),
+          ),
+        );
   }
 
   Future<void> _directConnect(
@@ -167,9 +176,6 @@ class BluetoothEquipmentBloc
     Emitter<BluetoothEquipmentState> emit,
   ) async {
     final BluetoothEquipmentModel bluetoothEquipment = event.bluetoothEquipment;
-
-    // bool timeOut = false;
-    // bool error = false;
 
     try {
       await bluetoothEquipment.equipment.connect(

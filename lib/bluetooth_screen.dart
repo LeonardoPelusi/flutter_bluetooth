@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/bluetooth_metrics_screen.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_bloc/bluetooth_equipments_list_bloc.dart';
@@ -19,6 +20,7 @@ class BluetoothScreen extends StatelessWidget {
         BlocProvider<BluetoothEquipmentsListBloc>(
           create: (context) => BluetoothEquipmentsListBloc(
             context.read<BluetoothStatusCubit>(),
+            bluetoothConnectFTMS: BluetoothConnectFTMS.all,
           ),
         ),
       ],
