@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bluetooth_serializer.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_goper_broadcast.dart';
@@ -28,12 +27,6 @@ class BluetoothEquipmentService {
   BluetoothFrequencyMeterService get frequencyMeterService =>
       BluetoothFrequencyMeterService._instance;
 
-  ValueNotifier<List<bool>> get connectedDevices => ValueNotifier([
-        bikeService.connectedBike != null,
-        treadmillService.connectedTreadmill != null,
-        frequencyMeterService.connectedFrequencyMeter != null,
-      ]);
-
   String getEquipmentId({
     required Iterable<List<int>> manufacturerData,
     required BluetoothDevice device,
@@ -42,7 +35,7 @@ class BluetoothEquipmentService {
     if (manufacturerData.isEmpty) {
       newId = '';
     } else {
-      if (device.name.contains('M3')) {
+      if (device.platformName.contains('M3')) {
         // abaixo peguei o terceiro byte do manufacture data porque
         // nessa lista não são enviados os bytes 00 e 01 (CompanyId)
         newId = manufacturerData.first[3].toString();

@@ -92,11 +92,11 @@ class BluetoothEquipmentsListBloc
     add(BluetoothEquipmentsListBackgroundListenScanEvent());
     await FlutterBluePlus.startScan(
       timeout: _backgroundScanTimeoutDuration,
-      withServices: event.retries >= 3
-          ? []
-          // : _bluetoothSharedPreferencesService.getServicesValidation(),
-          : [],
-      withNames: [],
+      withNames: BluetoothHelper.getListOfAvailableEquipments(),
+      // withServices: event.retries >= 3
+      //     ? []
+      //     // : _bluetoothSharedPreferencesService.getServicesValidation(),
+      //     : [],
     );
 
     // wait for scanning to stop

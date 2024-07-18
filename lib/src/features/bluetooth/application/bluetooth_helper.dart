@@ -99,7 +99,6 @@ abstract class BluetoothHelper {
   }
 
   static bool isTreadmill(BluetoothDevice device) {
-    print(device.platformName);
     for (String name in _treadmillsNamesList) {
       if (device.platformName.contains(name)) return true;
     }

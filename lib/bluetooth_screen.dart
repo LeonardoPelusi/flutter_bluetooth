@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bluetooth/bluetooth_metrics_screen.dart';
+import 'package:flutter_bluetooth/grid_view_widget.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
@@ -84,39 +86,51 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
               return Container();
             }
 
-            return ListView.builder(
-              // itemCount: state.bluetoothEquipments.length,
-              padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width * 0.025,
-              ),
-              itemCount: state.bluetoothEquipments.length,
-              itemBuilder: (ctx, index) {
-                final bluetoothEquipment = state.bluetoothEquipments[index];
-
-                return Column(
-                  children: [
-                    BlocProvider<BluetoothEquipmentBloc>(
-                      create: (_) => BluetoothEquipmentBloc(),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: MediaQuery.of(context).size.height * 0.005,
-                        ),
-                        child: BluetoothItemWidget(
-                          bluetoothEquipment: bluetoothEquipment,
-                        ),
-                      ),
+            return Column(
+              children: [
+                Expanded(
+                  flex: 14,
+                  child: ListView.builder(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width * 0.025,
                     ),
-                    if (index ==
-                            state.bluetoothEquipments
-                                .indexOf(state.bluetoothEquipments.last) &&
-                        state is BluetoothEquipmentsListAddEquipmentState)
-                      Container(
-                        margin: const EdgeInsets.only(top: 20),
-                        child: const CircularProgressIndicator(),
-                      ),
-                  ],
-                );
-              },
+                    itemCount: state.bluetoothEquipments.length,
+                    itemBuilder: (ctx, index) {
+                      final bluetoothEquipment = state.bluetoothEquipments[index];
+
+                      return Column(
+                        children: [
+                          BlocProvider<BluetoothEquipmentBloc>(
+                            create: (_) => BluetoothEquipmentBloc(),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical:
+                                    MediaQuery.of(context).size.height * 0.005,
+                              ),
+                              child: BluetoothItemWidget(
+                                bluetoothEquipment: bluetoothEquipment,
+                              ),
+                            ),
+                          ),
+                          if (index ==
+                                  state.bluetoothEquipments.indexOf(
+                                      state.bluetoothEquipments.last) &&
+                              state is BluetoothEquipmentsListAddEquipmentState)
+                            Container(
+                              margin: const EdgeInsets.only(top: 20),
+                              child: const CircularProgressIndicator(),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                const Spacer(),
+                const Expanded(
+                  flex: 12,
+                  child: GridViewWidget(),
+                ),
+              ],
             );
           }),
     );
@@ -151,14 +165,11 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
         builder: (context, state) {
           return GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => BluetoothMetricsScreen(
-                    bluetoothEquipment: widget.bluetoothEquipment,
-                  ),
-                ),
-              );
+              if (state is! BluetoothEquipmentConnectedState) {
+                _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
+                  bluetoothEquipment: widget.bluetoothEquipment,
+                ));
+              }
             },
             child: Card(
               shape: RoundedRectangleBorder(
@@ -171,21 +182,13 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
               shadowColor: Colors.black,
               child: ListTile(
                 title: Text(
-                    '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.name}'),
+                    '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.platformName}'),
                 subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
                 trailing: state is BluetoothEquipmentConnectingState
                     ? const CircularProgressIndicator()
                     : state is BluetoothEquipmentConnectedState
-                        ? const Icon(Icons.arrow_forward_ios)
-                        : TextButton(
-                            onPressed: () {
-                              _bluetoothEquipmentBloc
-                                  .add(BluetoothEquipmentConnectEvent(
-                                bluetoothEquipment: widget.bluetoothEquipment,
-                              ));
-                            },
-                            child: Text('Conectar'),
-                          ),
+                        ? const Icon(Icons.bluetooth)
+                        : const Text('Conectar'),
               ),
             ),
           );
