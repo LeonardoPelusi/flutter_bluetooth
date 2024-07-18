@@ -128,11 +128,6 @@ class BluetoothBikeService {
     _bleBikeMetricsNotifier.clearMetrics();
   }
 
-  void disconnectBike() {
-    connectedBike?.equipment.disconnect();
-    cleanBikeData();
-  }
-
   double _calculateSpeed(int power) {
     double num = (0.75 * power) / 0.19;
     return (pow(num, 1 / 3)) * 3.6;

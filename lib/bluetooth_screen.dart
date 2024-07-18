@@ -82,8 +82,24 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                 child: CircularProgressIndicator(),
               );
             }
+
             if (state.bluetoothEquipments.isEmpty) {
-              return Container();
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('No Bluetooth Devices Found'),
+                    ElevatedButton(
+                      onPressed: () {
+                        _bluetoothEquipmentsListBloc.add(
+                          BluetoothEquipmentsListNewScanEvent(),
+                        );
+                      },
+                      child: const Text('Restart Scan'),
+                    ),
+                  ],
+                ),
+              );
             }
 
             return Column(
@@ -96,7 +112,8 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                     ),
                     itemCount: state.bluetoothEquipments.length,
                     itemBuilder: (ctx, index) {
-                      final bluetoothEquipment = state.bluetoothEquipments[index];
+                      final bluetoothEquipment =
+                          state.bluetoothEquipments[index];
 
                       return Column(
                         children: [
@@ -188,7 +205,14 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
                     ? const CircularProgressIndicator()
                     : state is BluetoothEquipmentConnectedState
                         ? const Icon(Icons.bluetooth)
-                        : const Text('Conectar'),
+                        : const Text(
+                            'Conectar',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                              color: Colors.blue,
+                            ),
+                          ),
               ),
             ),
           );

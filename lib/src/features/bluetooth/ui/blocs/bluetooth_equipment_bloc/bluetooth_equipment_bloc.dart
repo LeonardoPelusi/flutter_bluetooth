@@ -110,12 +110,13 @@ class BluetoothEquipmentBloc
     Emitter<BluetoothEquipmentState> emit,
   ) async {
     final BluetoothEquipmentModel bluetoothEquipment = event.bluetoothEquipment;
+
     emit(
       BluetoothEquipmentConnectedState(connectedEquipment: bluetoothEquipment),
     );
 
-    _bleBikeService.disconnectBike();
     _bleBikeService.connectedBike = bluetoothEquipment;
+
     // _bluetoothSharedPreferencesService.bluetoothCryptoBikeKeiser(
     //   bikeKeiserId: bluetoothEquipment.equipment.id.id,
     // );
@@ -279,16 +280,17 @@ class BluetoothEquipmentBloc
           Bluetooth.broadcastKeiser.value = false;
           timer?.cancel();
         }
-        _bleBikeService.disconnectBike();
+        _bleBikeService.cleanBikeData();
         break;
       case BluetoothEquipmentType.bikeGoper:
-        _bleBikeService.disconnectBike();
+        _bleBikeService.cleanBikeData();
         break;
       case BluetoothEquipmentType.treadmill:
-        _bleTreadmillService.disconnectTreadmill();
+        _bleTreadmillService.cleanTreadmillData();
         break;
       case BluetoothEquipmentType.frequencyMeter:
-        _bleFrequencyMeterService.disconnectFrequencyMeter();
+        _bleFrequencyMeterService.clearUserData();
+        _bleFrequencyMeterService.cleanFequencyMeterData();
         break;
       default:
         break;

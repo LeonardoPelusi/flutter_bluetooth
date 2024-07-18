@@ -3,9 +3,8 @@ part of 'metrics_notifiers.dart';
 class BleTreadmillMetricsNotifier extends ChangeNotifier {
   static BleTreadmillMetricsNotifier instance = BleTreadmillMetricsNotifier();
 
-  // Equipamento Conectado Atualmente
-  static ValueNotifier<BluetoothEquipmentModel?> connectedTreadmill =
-      ValueNotifier<BluetoothEquipmentModel?>(null);
+  // Verificar se há esteira conectada atualmente
+  static ValueNotifier<bool> isConnectedTreadmill = ValueNotifier<bool>(false);
 
   //Métricas que serão exibidas
   static ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
@@ -24,6 +23,7 @@ class BleTreadmillMetricsNotifier extends ChangeNotifier {
   }
 
   void clearMetrics() {
+    isConnectedTreadmill.value = false;
     instaPower.value = -1;
     speed.value = 0;
     inclination.value = 0;

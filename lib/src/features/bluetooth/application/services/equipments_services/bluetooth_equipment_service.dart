@@ -45,10 +45,4 @@ class BluetoothEquipmentService {
     }
     return newId;
   }
-
-  void disconnect() {
-    bikeService.disconnectBike();
-    treadmillService.disconnectTreadmill();
-    frequencyMeterService.disconnectFrequencyMeter();
-  }
 }

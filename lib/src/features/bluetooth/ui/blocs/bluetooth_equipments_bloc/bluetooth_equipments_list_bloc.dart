@@ -285,8 +285,7 @@ class BluetoothEquipmentsListBloc
     Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     _equipmentList.clear();
-    _bluetoothEquipmentService.disconnect();
-
+    add(BluetoothEquipmentsListRemoveConnectedDevicesEvent());
     Bluetooth.heartRateConnected.value =
         HeartRateBleController(deviceConnected: false, open: true);
     Bluetooth.bikeConnected.value = BikeBleController(

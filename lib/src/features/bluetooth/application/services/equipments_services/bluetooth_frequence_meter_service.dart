@@ -32,7 +32,7 @@ class BluetoothFrequencyMeterService {
   //seleciona o servico de user data para escrever os campos idade e peso
   Future<void> getUserData(
       List<BluetoothService> _services, int idade, double peso) async {
-    _clearUserData();
+    clearUserData();
 
     _userDataService = _services.firstWhere(
       (service) =>
@@ -61,7 +61,7 @@ class BluetoothFrequencyMeterService {
   //seleciona servico do frequency meter para imprimir o frequency meter measurement (BPM)
   Future<void> getFrequencyMeterMeasurement(
       List<BluetoothService> _services) async {
-    _cleanFequencyMeterData();
+    cleanFequencyMeterData();
 
     _frequencyMeterService = _services.firstWhere(
       (service) =>
@@ -91,23 +91,17 @@ class BluetoothFrequencyMeterService {
     await _frequencyMeterMeasurement!.setNotifyValue(true);
   }
 
-  void _clearUserData() {
+  void clearUserData() {
     _userAge = null;
     _userWeight = null;
   }
 
-  void _cleanFequencyMeterData() {
+  void cleanFequencyMeterData() {
     connectedFrequencyMeter = null;
     _bleFrequencyMeterMetricsNotifier.clearMetrics();
     bpmBest = 0;
     bpmMedia = 0;
     _frequencyMeterCharacteristicStream?.cancel();
     _frequencyMeterCharacteristicStream = null;
-  }
-
-  void disconnectFrequencyMeter() {
-    connectedFrequencyMeter?.equipment.disconnect();
-    _clearUserData();
-    _cleanFequencyMeterData();
   }
 }
