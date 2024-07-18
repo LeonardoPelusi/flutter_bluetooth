@@ -6,9 +6,6 @@ class BluetoothBikeService {
   final BleBikeMetricsNotifier _bleBikeMetricsNotifier =
       BleBikeMetricsNotifier.instance;
 
-  // Equipamento Conectado Atualmente
-  BluetoothEquipmentModel? connectedBike;
-
   // Variáveis para a geração de graficos
   int powerBest = 0;
   int cadenceMedia = 0;
@@ -28,8 +25,17 @@ class BluetoothBikeService {
 
   double cadenceResolution = 0.5;
 
+  // Equipamento Conectado Atualmente
+  BluetoothEquipmentModel? _connectedBike;
+  BluetoothEquipmentModel? get connectedBike => _connectedBike!;
+
+  void updateConnectedBike(BluetoothEquipmentModel bike) {
+    _connectedBike = bike;
+    _bleBikeMetricsNotifier.updateIsConnectedValue(true);
+  }
+
   //seleciona fitness service para capturar os valores de cadencia e potencia
-  void getIndoorBikeData(List<BluetoothService> _services) async {
+  Future<void> getIndoorBikeData(List<BluetoothService> _services) async {
     cleanBikeData();
     _fitnessMachineService = _services.firstWhere((service) =>
         service.uuid == BluetoothEquipmentService.guids.fitnessMachineService);
@@ -39,7 +45,7 @@ class BluetoothBikeService {
             characteristic.uuid ==
             BluetoothEquipmentService.guids.bikeIndoorData);
 
-    bikeCharacteristicStream = _bikeIndoorData.value.listen((value) {
+    bikeCharacteristicStream = _bikeIndoorData.lastValueStream.listen((value) {
       late int instaCadence;
       late int instaPower;
       late int resistanceLevel;
@@ -124,7 +130,7 @@ class BluetoothBikeService {
   }
 
   void cleanBikeData() {
-    connectedBike = null;
+    _connectedBike = null;
     _bleBikeMetricsNotifier.clearMetrics();
   }
 

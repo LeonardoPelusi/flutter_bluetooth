@@ -28,9 +28,9 @@ class GridViewWidget extends StatelessWidget {
             children: [
               const _CustomDivider(),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
+                valueListenable: BleBikeMetricsNotifier.isConnected,
                 builder: (context, value, child) => Text(
-                  'Status: $value',
+                  'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
                   style: textStyle,
                 ),
               ),
@@ -79,14 +79,14 @@ class GridViewWidget extends StatelessWidget {
             children: [
               const _CustomDivider(),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
+                valueListenable: BleTreadmillMetricsNotifier.isConnected,
                 builder: (context, value, child) => Text(
-                  'Status: $value',
+                  'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
                   style: textStyle,
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
+                valueListenable: BleTreadmillMetricsNotifier.inclination,
                 builder: (context, value, child) => Text(
                   'Id: $value',
                   style: textStyle,
@@ -123,14 +123,14 @@ class GridViewWidget extends StatelessWidget {
             children: [
               const _CustomDivider(),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
+                valueListenable: BleFrequencyMeterMetricsNotifier.isConnected,
                 builder: (context, value, child) => Text(
-                  'Status: $value',
+                  'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
                   style: textStyle,
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
+                valueListenable: BleFrequencyMeterMetricsNotifier.bpmValue,
                 builder: (context, value, child) => Text(
                   'Id: $value',
                   style: textStyle,

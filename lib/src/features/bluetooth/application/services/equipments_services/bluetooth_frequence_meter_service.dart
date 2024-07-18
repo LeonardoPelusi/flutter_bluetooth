@@ -7,9 +7,6 @@ class BluetoothFrequencyMeterService {
   final BleFrequencyMeterMetricsNotifier _bleFrequencyMeterMetricsNotifier =
       BleFrequencyMeterMetricsNotifier.instance;
 
-  // Equipamento Conectado Atualmente
-  BluetoothEquipmentModel? connectedFrequencyMeter;
-
   int bpmMedia = 0;
   int bpmBest = 0;
   int cumulativeBpm = 0;
@@ -28,6 +25,16 @@ class BluetoothFrequencyMeterService {
 
   // Dados
   late List<int> bpmData;
+
+  // Equipamento Conectado Atualmente
+  BluetoothEquipmentModel? _connectedFrequencyMeter;
+  BluetoothEquipmentModel? get connectedFrequencyMeter =>
+      _connectedFrequencyMeter!;
+
+  void updateConnectedFrequencyMeter(BluetoothEquipmentModel frequencyMeter) {
+    _connectedFrequencyMeter = frequencyMeter;
+    _bleFrequencyMeterMetricsNotifier.updateIsConnectedValue(true);
+  }
 
   //seleciona o servico de user data para escrever os campos idade e peso
   Future<void> getUserData(
@@ -76,7 +83,7 @@ class BluetoothFrequencyMeterService {
     );
 
     _frequencyMeterCharacteristicStream =
-        _frequencyMeterMeasurement!.value.listen((value) {
+        _frequencyMeterMeasurement!.lastValueStream.listen((value) {
       late int bpmValue;
       bpmData = value;
       if (bpmData.length > 1) bpmValue = bpmData[1];
@@ -97,7 +104,7 @@ class BluetoothFrequencyMeterService {
   }
 
   void cleanFequencyMeterData() {
-    connectedFrequencyMeter = null;
+    _connectedFrequencyMeter = null;
     _bleFrequencyMeterMetricsNotifier.clearMetrics();
     bpmBest = 0;
     bpmMedia = 0;

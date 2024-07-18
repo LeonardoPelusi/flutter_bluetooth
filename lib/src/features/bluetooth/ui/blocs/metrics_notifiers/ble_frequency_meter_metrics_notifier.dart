@@ -4,8 +4,16 @@ class BleFrequencyMeterMetricsNotifier extends ChangeNotifier {
   static BleFrequencyMeterMetricsNotifier instance =
       BleFrequencyMeterMetricsNotifier();
 
+  // Verificar se há frequencímetro conectada atualmente
+  static ValueNotifier<bool> isConnected = ValueNotifier<bool>(false);
+
   //Métricas que serão exibidas
   static ValueNotifier<int> bpmValue = ValueNotifier<int>(-1);
+
+  void updateIsConnectedValue(bool newValue) {
+    isConnected.value = newValue;
+    notifyListeners();
+  }
 
   void updateMetrics({required int newBpm}) {
     bpmValue.value = newBpm;
@@ -13,6 +21,7 @@ class BleFrequencyMeterMetricsNotifier extends ChangeNotifier {
   }
 
   void clearMetrics() {
+    isConnected.value = false;
     bpmValue.value = -1;
     notifyListeners();
   }

@@ -3,13 +3,19 @@ part of 'metrics_notifiers.dart';
 class BleBikeMetricsNotifier extends ChangeNotifier {
   static BleBikeMetricsNotifier instance = BleBikeMetricsNotifier();
 
+  // Verificar se há bike conectada atualmente
+  static ValueNotifier<bool> isConnected = ValueNotifier<bool>(false);
+
   //Métricas que serão exibidas
   static ValueNotifier<int> instaCadence = ValueNotifier<int>(0);
   static ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
   static ValueNotifier<int> resistanceLevel = ValueNotifier<int>(0);
   static ValueNotifier<double> speed = ValueNotifier<double>(0);
 
-  
+  void updateIsConnectedValue(bool newValue) {
+    isConnected.value = newValue;
+    notifyListeners();
+  }
 
   void updateMetrics({
     required int newInstaCadence,
@@ -25,6 +31,7 @@ class BleBikeMetricsNotifier extends ChangeNotifier {
   }
 
   void clearMetrics() {
+    isConnected.value = false;
     instaCadence.value = 0;
     instaPower.value = -1;
     resistanceLevel.value = 0;
