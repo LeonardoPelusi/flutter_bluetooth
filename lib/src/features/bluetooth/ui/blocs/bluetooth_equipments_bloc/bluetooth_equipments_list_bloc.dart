@@ -23,22 +23,23 @@ class BluetoothEquipmentsListBloc
     // this._bluetoothSharedPreferencesService,
   ) : super(BluetoothEquipmentsListInitialState()) {
     on<BluetoothEquipmentsListBackgroundScanEvent>(_backgroundScan);
+    on<BluetoothEquipmentsListBackgroundListenScanEvent>(_listenBackgroundScan);
     on<BluetoothEquipmentsListNewScanEvent>(_newScan);
-    on<BluetoothEquipmentsListListenScanEvent>(_listenScan);
+    on<BluetoothEquipmentsListNewScanListenScanEvent>(_listenNewScan);
     on<BluetoothEquipmentsListAutomacticConnectEvent>(_automaticConnect);
     on<BluetoothEquipmentsListRemoveConnectedDevicesEvent>(
         _removeConnectedDevices);
     on<BluetoothEquipmentsListDisconnectBluetoothEvent>(_disconnectBluetooth);
 
     _bluetoothStatusCubit.stream.listen((event) {
-      if (event == BluetoothStatusState.connected) {
+      if (event.status == BluetoothStatus.connected) {
         // Caso o equipamento seja uma esteira-usb não será necessário
         // realizar esses processos
         // if (!_isTreadmillUSB) {
         add(BluetoothEquipmentsListRemoveConnectedDevicesEvent());
         //   add(BluetoothEquipmentsBackgroundScanEvent());
         // }
-      } else if (event == BluetoothStatusState.disconnected) {
+      } else if (event.status == BluetoothStatus.disconnected) {
         add(BluetoothEquipmentsListDisconnectBluetoothEvent(
             closeTraining: false));
       }
@@ -91,52 +92,42 @@ class BluetoothEquipmentsListBloc
     Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     // await _cancelStream();
-    add(BluetoothEquipmentsListListenScanEvent(isBackgroundScan: true));
+    add(BluetoothEquipmentsListBackgroundListenScanEvent());
     await FlutterBluePlus.startScan(
       timeout: _backgroundScanTimeoutDuration,
       withServices: event.retries >= 3
           ? []
           // : _bluetoothSharedPreferencesService.getServicesValidation(),
           : [],
-    ).then((_) async {
-      // Caso o usuário der stop no scan, não será necessário realizar esses processos
-      // if (_equipmentList.isNotEmpty) {
-      //   add(BluetoothEquipmentsListAutomacticConnectEvent());
-      // }
-      // if ((_isBike && bikeList.isEmpty) ||
-      //     (_isTreadmillBLE && treadmillList.isEmpty)) {
-      //   add(BluetoothEquipmentsListBackgroundScanEvent(
-      //     retries: event.retries + 1,
-      //   ));
-      // }
+      withNames: [],
+    );
+
+    // wait for scanning to stop
+    await FlutterBluePlus.isScanning
+        .where((val) => val == false)
+        .first
+        .then((_) {
+      if (_equipmentList.isNotEmpty) {
+        add(BluetoothEquipmentsListAutomacticConnectEvent());
+      }
+      if ((_isBike && bikeList.isEmpty) ||
+          (_isTreadmillBLE && treadmillList.isEmpty)) {
+        add(BluetoothEquipmentsListBackgroundScanEvent(
+          retries: event.retries + 1,
+        ));
+      }
     });
   }
 
-  Future<void> _newScan(
-    BluetoothEquipmentsListNewScanEvent event,
-    Emitter<BluetoothEquipmentsListState> emit,
-  ) async {
-    _equipmentList.clear();
-    add(BluetoothEquipmentsListListenScanEvent());
-    await FlutterBluePlus.startScan(
-      timeout: _newScanTimeoutDuration,
-      withServices: event.isRetry
-          ? []
-          // : _bluetoothSharedPreferencesService.getServicesValidation(),
-          : [],
-    ).then((_) {
-      // emit(BluetoothEquipmentsListLoadedState(
-      //   bluetoothEquipments: _equipmentList,
-      // ));
-    });
-  }
-
-  Future<void> _listenScan(
-    BluetoothEquipmentsListListenScanEvent event,
+  Future<void> _listenBackgroundScan(
+    BluetoothEquipmentsListBackgroundListenScanEvent event,
     Emitter<BluetoothEquipmentsListState> emit,
   ) async {
     emit(BluetoothEquipmentsListLoadingState());
 
+    // listen to scan results
+    // Note: `onScanResults` only returns live scan results, i.e. during scanning. Use
+    //  `scanResults` if you want live scan results *or* the results from a previous scan.
     await emit.onEach(
       FlutterBluePlus.onScanResults,
       onData: (List<ScanResult> results) {
@@ -178,19 +169,10 @@ class BluetoothEquipmentsListBloc
             );
             if (!_equipmentList.contains(bike)) {
               _equipmentList.add(bike);
-              if (event.isBackgroundScan) {
-                // !TODO BLUETOOTH: Implementar SharedPreferences
-                // if (_bluetoothSharedPreferencesService.bikeOnSharedPreferences) {
-                // _sharedPreferencesTryConnectWithEquipment(_bike);
-                // }
-              } else {
-                emit(BluetoothEquipmentsListAddEquipmentState(
-                  bluetoothEquipments: [
-                    ...state.bluetoothEquipments,
-                    bike,
-                  ],
-                ));
-              }
+              // !TODO BLUETOOTH: Implementar SharedPreferences
+              // if (_bluetoothSharedPreferencesService.bikeOnSharedPreferences) {
+              // _sharedPreferencesTryConnectWithEquipment(_bike);
+              // }
             }
           } else if (_isTreadmillBLE &&
               BluetoothHelper.isTreadmill(newDevice)) {
@@ -201,21 +183,12 @@ class BluetoothEquipmentsListBloc
             );
             if (!_equipmentList.contains(treadmill)) {
               _equipmentList.add(treadmill);
-              if (event.isBackgroundScan) {
-                // !TODO BLUETOOTH: Implementar SharedPreferences
-                // if (_bluetoothSharedPreferencesService
-                //     .haveTreadmillOnSharedPreferences) {
+              // !TODO BLUETOOTH: Implementar SharedPreferences
+              // if (_bluetoothSharedPreferencesService
+              //     .haveTreadmillOnSharedPreferences) {
 
-                // _sharedPreferencesTryConnectWithEquipment(_treadmill);
-                // }
-              } else {
-                emit(BluetoothEquipmentsListAddEquipmentState(
-                  bluetoothEquipments: [
-                    ...state.bluetoothEquipments,
-                    treadmill,
-                  ],
-                ));
-              }
+              // _sharedPreferencesTryConnectWithEquipment(_treadmill);
+              // }
             }
           } else if (BluetoothHelper.isFrequencyMeter(newDevice)) {
             final BluetoothEquipmentModel frequencyMeter =
@@ -226,15 +199,84 @@ class BluetoothEquipmentsListBloc
             );
             if (!_equipmentList.contains(frequencyMeter)) {
               _equipmentList.add(frequencyMeter);
-              if (!event.isBackgroundScan) {
-                emit(BluetoothEquipmentsListAddEquipmentState(
-                  bluetoothEquipments: [
-                    ...state.bluetoothEquipments,
-                    frequencyMeter,
-                  ],
-                ));
-              }
             }
+          }
+        }
+      },
+    );
+  }
+
+  Future<void> _newScan(
+    BluetoothEquipmentsListNewScanEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
+  ) async {
+    _equipmentList.clear();
+    add(BluetoothEquipmentsListNewScanListenScanEvent());
+    await FlutterBluePlus.startScan(
+      timeout: _newScanTimeoutDuration,
+      withNames: BluetoothHelper.getListOfAvailableEquipments(),
+      // withServices: event.isRetry
+      //     ? []
+      //     // : _bluetoothSharedPreferencesService.getServicesValidation(),
+      //     : [],
+    );
+
+    // wait for scanning to stop
+    await FlutterBluePlus.isScanning.where((val) => val == false).first.then(
+          (_) => emit(
+            BluetoothEquipmentsListLoadedState(
+              bluetoothEquipments: _equipmentList,
+            ),
+          ),
+        );
+  }
+
+  Future<void> _listenNewScan(
+    BluetoothEquipmentsListNewScanListenScanEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
+  ) async {
+    emit(BluetoothEquipmentsListLoadingState());
+
+    // listen to scan results
+    // Note: `onScanResults` only returns live scan results, i.e. during scanning. Use
+    //  `scanResults` if you want live scan results *or* the results from a previous scan.
+    await emit.onEach(
+      FlutterBluePlus.onScanResults,
+      onData: (List<ScanResult> results) {
+        for (ScanResult result in results) {
+          BluetoothDevice newDevice = result.device;
+
+          if ((_isBike && !_isTreadmillBLE) &&
+              !BluetoothHelper.isBike(newDevice)) {
+            return;
+          }
+          if ((_isTreadmillBLE && !_isBike) &&
+              !BluetoothHelper.isTreadmill(newDevice)) {
+            return;
+          }
+
+          final String newId = _bluetoothEquipmentService.getEquipmentId(
+            manufacturerData: result.advertisementData.manufacturerData.values,
+            device: newDevice,
+          );
+
+          final BluetoothEquipmentType equipmentType =
+              BluetoothHelper.getBluetoothEquipmentType(newDevice);
+
+          final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
+            id: newId,
+            equipment: newDevice,
+            equipmentType: equipmentType,
+          );
+
+          if (!_equipmentList.contains(newEquipment)) {
+            _equipmentList.add(newEquipment);
+            emit(BluetoothEquipmentsListAddEquipmentState(
+              bluetoothEquipments: [
+                ...state.bluetoothEquipments,
+                newEquipment,
+              ],
+            ));
           }
         }
       },
@@ -289,6 +331,12 @@ class BluetoothEquipmentsListBloc
   }
 
   // !TODO BLUETOOTH: Implementar SharedPreferences
+
+  // connect without scanning
+// final File file = File('/remoteId.txt');
+// var device = BluetoothDevice.fromId(await file.readAsString());
+// await device.connect();
+
   // Future<void> _sharedPreferencesTryConnectWithEquipment(
   //     DeviceWithId device) async {
   //   final String equipmentId = _bluetoothSharedPreferencesService.equipmentId;

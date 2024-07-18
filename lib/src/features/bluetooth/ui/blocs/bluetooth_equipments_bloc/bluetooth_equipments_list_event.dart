@@ -9,18 +9,17 @@ class BluetoothEquipmentsListBackgroundScanEvent
   BluetoothEquipmentsListBackgroundScanEvent({this.retries = 0});
 }
 
+class BluetoothEquipmentsListBackgroundListenScanEvent
+    extends BluetoothEquipmentsListEvent {}
+
 class BluetoothEquipmentsListNewScanEvent extends BluetoothEquipmentsListEvent {
   final bool isRetry;
 
   BluetoothEquipmentsListNewScanEvent({this.isRetry = false});
 }
 
-class BluetoothEquipmentsListListenScanEvent
-    extends BluetoothEquipmentsListEvent {
-  final bool isBackgroundScan;
-
-  BluetoothEquipmentsListListenScanEvent({this.isBackgroundScan = false});
-}
+class BluetoothEquipmentsListNewScanListenScanEvent
+    extends BluetoothEquipmentsListEvent {}
 
 class BluetoothEquipmentsListAutomacticConnectEvent
     extends BluetoothEquipmentsListEvent {}

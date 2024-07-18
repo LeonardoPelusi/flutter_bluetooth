@@ -63,7 +63,7 @@ class BluetoothEquipmentBloc
     ));
 
     // !TODO implementar lógica broadcast
-    if (BluetoothHelper.isBikeKeiser(bluetoothEquipment.equipment)) {
+    if (BluetoothHelper.isBike(bluetoothEquipment.equipment)) {
       add(BluetoothEquipmentBroadcastConnectEvent(
         bluetoothEquipment: bluetoothEquipment,
       ));
