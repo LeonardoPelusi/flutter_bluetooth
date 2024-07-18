@@ -121,35 +121,28 @@ class BluetoothEquipmentBloc
     // );
     // _trainingFlowData.postBikeGraph = true;
 
-    // FlutterBluePlus.stopScan();
-
-    // await emit.onEach(
-    //   FlutterBluePlus.scanResults,
-    //   onData: (List<ScanResult> scanResults) async {
-
-    //   },
-    // );
-
     var subscription = FlutterBluePlus.onScanResults.listen((scanResults) {
-      for (ScanResult scanResult in scanResults) {
-        if (scanResult.device.remoteId ==
-            bluetoothEquipment.equipment.remoteId) {
-          final Uint8List manufacturerData = scanResult
-              .advertisementData.manufacturerData.values.first
-              .asUint8List();
+      if (scanResults.isNotEmpty) {
+        for (ScanResult scanResult in scanResults) {
+          if (scanResult.device.remoteId ==
+              bluetoothEquipment.equipment.remoteId) {
+            final Uint8List manufacturerData = scanResult
+                .advertisementData.manufacturerData.values.first
+                .asUint8List();
 
-          switch (event.bluetoothEquipment.equipmentType) {
-            case BluetoothEquipmentType.bikeKeiser:
-              _bleBikeService.updateConnectedBike(bluetoothEquipment);
-              _bleBikeService.getBroadcastBikeKeiserData(manufacturerData);
-              break;
-            case BluetoothEquipmentType.bikeGoper:
-              _bleBikeService.updateConnectedBike(bluetoothEquipment);
-              _bleBikeService.getBroadcastBikeGoperData(manufacturerData);
-              break;
+            switch (event.bluetoothEquipment.equipmentType) {
+              case BluetoothEquipmentType.bikeKeiser:
+                _bleBikeService.updateConnectedBike(bluetoothEquipment);
+                _bleBikeService.getBroadcastBikeKeiserData(manufacturerData);
+                break;
+              case BluetoothEquipmentType.bikeGoper:
+                _bleBikeService.updateConnectedBike(bluetoothEquipment);
+                _bleBikeService.getBroadcastBikeGoperData(manufacturerData);
+                break;
 
-            default:
-              break;
+              default:
+                break;
+            }
           }
         }
       }

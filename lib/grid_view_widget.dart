@@ -21,7 +21,7 @@ class GridViewWidget extends StatelessWidget {
       ),
       crossAxisCount: 5,
       children: [
-        const Spacer(),
+        const SizedBox(),
         _GridViewItem(
           title: 'Bike',
           child: Column(
@@ -147,7 +147,7 @@ class GridViewWidget extends StatelessWidget {
             ],
           ),
         ),
-        const Spacer(),
+        const SizedBox(),
       ],
     );
   }

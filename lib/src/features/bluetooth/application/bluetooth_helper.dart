@@ -52,7 +52,7 @@ abstract class BluetoothHelper {
 
   static List<String> get _bikesGoperNamesList {
     return [
-      'Goper Bike',
+      'Goper Bike          ',
       'BIKE-',
     ];
   }

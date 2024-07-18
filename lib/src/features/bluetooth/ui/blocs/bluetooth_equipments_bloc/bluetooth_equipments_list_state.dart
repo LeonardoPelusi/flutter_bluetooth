@@ -11,13 +11,13 @@ sealed class BluetoothEquipmentsListState extends Equatable {
 
 final class BluetoothEquipmentsListInitialState extends BluetoothEquipmentsListState {
   @override
-  List<Object?> get props => [bluetoothEquipments];
+  List<Object?> get props => [];
 }
 
 final class BluetoothEquipmentsListLoadingState
     extends BluetoothEquipmentsListState {
   @override
-  List<Object?> get props => [bluetoothEquipments];
+  List<Object?> get props => [];
 }
 
 final class BluetoothEquipmentsListAddEquipmentState

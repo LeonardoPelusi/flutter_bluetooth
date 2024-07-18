@@ -18,6 +18,12 @@ class BluetoothEquipmentsListNewScanEvent extends BluetoothEquipmentsListEvent {
   BluetoothEquipmentsListNewScanEvent({this.isRetry = false});
 }
 
+class BluetoothEquipmentsListAddNewEquipmentEvent
+    extends BluetoothEquipmentsListEvent {
+  final BluetoothEquipmentModel newEquipment;
+  BluetoothEquipmentsListAddNewEquipmentEvent({required this.newEquipment});
+}
+
 class BluetoothEquipmentsListNewScanListenScanEvent
     extends BluetoothEquipmentsListEvent {}
 

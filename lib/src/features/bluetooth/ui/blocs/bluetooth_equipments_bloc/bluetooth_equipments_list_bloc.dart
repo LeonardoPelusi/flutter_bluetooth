@@ -29,6 +29,7 @@ class BluetoothEquipmentsListBloc
     on<BluetoothEquipmentsListBackgroundListenScanEvent>(_listenBackgroundScan);
     on<BluetoothEquipmentsListNewScanEvent>(_newScan);
     on<BluetoothEquipmentsListNewScanListenScanEvent>(_listenNewScan);
+    on<BluetoothEquipmentsListAddNewEquipmentEvent>(_addNewEquipment);
     on<BluetoothEquipmentsListAutomacticConnectEvent>(_automaticConnect);
     on<BluetoothEquipmentsListRemoveConnectedDevicesEvent>(
         _removeConnectedDevices);
@@ -203,48 +204,56 @@ class BluetoothEquipmentsListBloc
     // listen to scan results
     // Note: `onScanResults` only returns live scan results, i.e. during scanning. Use
     //  `scanResults` if you want live scan results *or* the results from a previous scan.
-    await emit.onEach(
-      FlutterBluePlus.onScanResults,
-      onData: (List<ScanResult> results) {
-        for (ScanResult result in results) {
-          final BluetoothDevice newDevice = result.device;
 
-          if (bluetoothConnectFTMS == BluetoothConnectFTMS.bikeAndMybeat &&
-              !BluetoothHelper.isBike(newDevice)) {
-            return;
-          }
-          if ((bluetoothConnectFTMS ==
-                  BluetoothConnectFTMS.treadmillAndMybeat) &&
-              !BluetoothHelper.isTreadmill(newDevice)) {
-            return;
-          }
+    var subscription = FlutterBluePlus.onScanResults.listen((scanResults) {
+      for (ScanResult result in scanResults) {
+        final BluetoothDevice newDevice = result.device;
 
-          final String newId = _bluetoothEquipmentService.getEquipmentId(
-            manufacturerData: result.advertisementData.manufacturerData.values,
-            device: newDevice,
-          );
-
-          final BluetoothEquipmentType equipmentType =
-              BluetoothHelper.getBluetoothEquipmentType(newDevice);
-
-          final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
-            id: newId,
-            equipment: newDevice,
-            equipmentType: equipmentType,
-          );
-
-          if (!_equipmentList.contains(newEquipment)) {
-            _equipmentList.add(newEquipment);
-            emit(BluetoothEquipmentsListAddEquipmentState(
-              bluetoothEquipments: [
-                ...state.bluetoothEquipments,
-                newEquipment,
-              ],
-            ));
-          }
+        if (bluetoothConnectFTMS == BluetoothConnectFTMS.bikeAndMybeat &&
+            !BluetoothHelper.isBike(newDevice)) {
+          return;
         }
-      },
-    );
+        if ((bluetoothConnectFTMS == BluetoothConnectFTMS.treadmillAndMybeat) &&
+            !BluetoothHelper.isTreadmill(newDevice)) {
+          return;
+        }
+
+        final String newId = _bluetoothEquipmentService.getEquipmentId(
+          manufacturerData: result.advertisementData.manufacturerData.values,
+          device: newDevice,
+        );
+
+        final BluetoothEquipmentType equipmentType =
+            BluetoothHelper.getBluetoothEquipmentType(newDevice);
+
+        final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
+          id: newId,
+          equipment: newDevice,
+          equipmentType: equipmentType,
+        );
+
+        if (!_equipmentList.contains(newEquipment)) {
+          _equipmentList.add(newEquipment);
+          add(BluetoothEquipmentsListAddNewEquipmentEvent(
+            newEquipment: newEquipment,
+          ));
+        }
+      }
+    });
+
+    FlutterBluePlus.cancelWhenScanComplete(subscription);
+  }
+
+  Future<void> _addNewEquipment(
+    BluetoothEquipmentsListAddNewEquipmentEvent event,
+    Emitter<BluetoothEquipmentsListState> emit,
+  ) async {
+    emit(BluetoothEquipmentsListAddEquipmentState(
+      bluetoothEquipments: [
+        ...state.bluetoothEquipments,
+        event.newEquipment,
+      ],
+    ));
   }
 
   Future<void> _automaticConnect(
