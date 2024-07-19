@@ -28,7 +28,6 @@ class BleTreadmillMetricsNotifier extends ChangeNotifier {
   }
 
   void clearMetrics() {
-    isConnected.value = false;
     instaPower.value = -1;
     speed.value = 0;
     inclination.value = 0;

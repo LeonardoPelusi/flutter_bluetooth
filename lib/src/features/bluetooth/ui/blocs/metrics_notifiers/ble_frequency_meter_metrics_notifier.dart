@@ -21,7 +21,6 @@ class BleFrequencyMeterMetricsNotifier extends ChangeNotifier {
   }
 
   void clearMetrics() {
-    isConnected.value = false;
     bpmValue.value = -1;
     notifyListeners();
   }

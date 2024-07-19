@@ -186,6 +186,10 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
                 _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
                   bluetoothEquipment: widget.bluetoothEquipment,
                 ));
+              } else {
+                _bluetoothEquipmentBloc.add(BluetoothEquipmentDisconnectEvent(
+                  bluetoothEquipment: widget.bluetoothEquipment,
+                ));
               }
             },
             child: Card(
@@ -204,7 +208,7 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
                 trailing: state is BluetoothEquipmentConnectingState
                     ? const CircularProgressIndicator()
                     : state is BluetoothEquipmentConnectedState
-                        ? const Icon(Icons.bluetooth)
+                        ? const Icon(Icons.close)
                         : const Text(
                             'Conectar',
                             style: TextStyle(

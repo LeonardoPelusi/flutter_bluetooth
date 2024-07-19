@@ -27,7 +27,7 @@ class BluetoothBikeService {
 
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? _connectedBike;
-  BluetoothEquipmentModel? get connectedBike => _connectedBike!;
+  BluetoothEquipmentModel? get connectedBike => _connectedBike;
 
   void updateConnectedBike(BluetoothEquipmentModel bike) {
     _connectedBike = bike;
@@ -36,7 +36,7 @@ class BluetoothBikeService {
 
   //seleciona fitness service para capturar os valores de cadencia e potencia
   Future<void> getIndoorBikeData(List<BluetoothService> _services) async {
-    cleanBikeData();
+    _resetVariables();
     _fitnessMachineService = _services.firstWhere((service) =>
         service.uuid == BluetoothEquipmentService.guids.fitnessMachineService);
 
@@ -129,9 +129,14 @@ class BluetoothBikeService {
     );
   }
 
+  void _resetVariables() {
+    _bleBikeMetricsNotifier.clearMetrics();
+  }
+
   void cleanBikeData() {
     _connectedBike = null;
-    _bleBikeMetricsNotifier.clearMetrics();
+    _bleBikeMetricsNotifier.updateIsConnectedValue(false);
+    _resetVariables();
   }
 
   double _calculateSpeed(int power) {

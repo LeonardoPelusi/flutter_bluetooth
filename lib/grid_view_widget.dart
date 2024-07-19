@@ -34,13 +34,6 @@ class GridViewWidget extends StatelessWidget {
                   style: textStyle,
                 ),
               ),
-              ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
-                builder: (context, value, child) => Text(
-                  'Id: $value',
-                  style: textStyle,
-                ),
-              ),
               const _CustomDivider(),
               ValueListenableBuilder(
                 valueListenable: BleBikeMetricsNotifier.instaCadence,
@@ -85,13 +78,6 @@ class GridViewWidget extends StatelessWidget {
                   style: textStyle,
                 ),
               ),
-              ValueListenableBuilder(
-                valueListenable: BleTreadmillMetricsNotifier.inclination,
-                builder: (context, value, child) => Text(
-                  'Id: $value',
-                  style: textStyle,
-                ),
-              ),
               const _CustomDivider(),
               ValueListenableBuilder(
                 valueListenable: BleTreadmillMetricsNotifier.inclination,
@@ -126,13 +112,6 @@ class GridViewWidget extends StatelessWidget {
                 valueListenable: BleFrequencyMeterMetricsNotifier.isConnected,
                 builder: (context, value, child) => Text(
                   'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
-                  style: textStyle,
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: BleFrequencyMeterMetricsNotifier.bpmValue,
-                builder: (context, value, child) => Text(
-                  'Id: $value',
                   style: textStyle,
                 ),
               ),

@@ -22,7 +22,7 @@ class BluetoothTreadmillService {
 
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? _connectedTreadmill;
-  BluetoothEquipmentModel? get connectedTreadmill => _connectedTreadmill!;
+  BluetoothEquipmentModel? get connectedTreadmill => _connectedTreadmill;
 
   void updateConnectedTreadmill(BluetoothEquipmentModel treadmill) {
     _connectedTreadmill = treadmill;
@@ -31,7 +31,7 @@ class BluetoothTreadmillService {
 
   //seleciona treadmill para trazer métricas da esteira
   Future<void> getTreadmillData(List<BluetoothService> _services) async {
-    cleanTreadmillData();
+    _resetVariables();
 
     _fitnessMachineService = _services.firstWhere((service) =>
         service.uuid == BluetoothEquipmentService.guids.fitnessMachineService);
@@ -82,12 +82,17 @@ class BluetoothTreadmillService {
     await _treadmillFitnessData.setNotifyValue(true);
   }
 
-  void cleanTreadmillData() {
-    _connectedTreadmill = null;
+  void _resetVariables() {
     _bleTreadmillMetricsNotifier.clearMetrics();
     treadmillCharacteristicStream?.cancel();
     treadmillCharacteristicStream = null;
     treadmillData = [];
+  }
+
+  void cleanTreadmillData() {
+    _connectedTreadmill = null;
+    _bleTreadmillMetricsNotifier.updateIsConnectedValue(false);
+    _resetVariables();
   }
 
   double _powerForTreadmill(double speed, double inclination) {

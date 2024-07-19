@@ -29,7 +29,7 @@ class BluetoothFrequencyMeterService {
   // Equipamento Conectado Atualmente
   BluetoothEquipmentModel? _connectedFrequencyMeter;
   BluetoothEquipmentModel? get connectedFrequencyMeter =>
-      _connectedFrequencyMeter!;
+      _connectedFrequencyMeter;
 
   void updateConnectedFrequencyMeter(BluetoothEquipmentModel frequencyMeter) {
     _connectedFrequencyMeter = frequencyMeter;
@@ -39,7 +39,7 @@ class BluetoothFrequencyMeterService {
   //seleciona o servico de user data para escrever os campos idade e peso
   Future<void> getUserData(
       List<BluetoothService> _services, int idade, double peso) async {
-    clearUserData();
+    _resetVariables();
 
     _userDataService = _services.firstWhere(
       (service) =>
@@ -103,12 +103,17 @@ class BluetoothFrequencyMeterService {
     _userWeight = null;
   }
 
-  void cleanFequencyMeterData() {
-    _connectedFrequencyMeter = null;
+  void _resetVariables() {
     _bleFrequencyMeterMetricsNotifier.clearMetrics();
     bpmBest = 0;
     bpmMedia = 0;
     _frequencyMeterCharacteristicStream?.cancel();
     _frequencyMeterCharacteristicStream = null;
+  }
+
+  void cleanFequencyMeterData() {
+    _connectedFrequencyMeter = null;
+    _bleFrequencyMeterMetricsNotifier.updateIsConnectedValue(false);
+    _resetVariables();
   }
 }

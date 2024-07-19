@@ -27,6 +27,8 @@ class BluetoothEquipmentService {
   BluetoothFrequencyMeterService get frequencyMeterService =>
       BluetoothFrequencyMeterService._instance;
 
+  static final bool _isBroadcastConnection = false;
+
   String getEquipmentId({
     required Iterable<List<int>> manufacturerData,
     required BluetoothDevice device,
