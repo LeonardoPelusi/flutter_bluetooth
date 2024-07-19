@@ -1,7 +1,7 @@
 part of 'bluetooth_equipment_service.dart';
 
 class BluetoothTreadmillService {
-  static BluetoothTreadmillService get _instance => BluetoothTreadmillService();
+  static BluetoothTreadmillService get instance => BluetoothTreadmillService();
 
   final BleTreadmillMetricsNotifier _bleTreadmillMetricsNotifier =
       BleTreadmillMetricsNotifier.instance;

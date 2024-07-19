@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/grid_view_widget.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
@@ -126,6 +127,9 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                               ),
                               child: BluetoothItemWidget(
                                 bluetoothEquipment: bluetoothEquipment,
+                                refreshList: () {
+                                  setState(() {});
+                                },
                               ),
                             ),
                           ),
@@ -155,9 +159,11 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
 }
 
 class BluetoothItemWidget extends StatefulWidget {
+  final VoidCallback refreshList;
   final BluetoothEquipmentModel bluetoothEquipment;
   const BluetoothItemWidget({
     required this.bluetoothEquipment,
+    required this.refreshList,
     super.key,
   });
 
@@ -168,21 +174,37 @@ class BluetoothItemWidget extends StatefulWidget {
 class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
   late final BluetoothEquipmentBloc _bluetoothEquipmentBloc;
 
+  late final BluetoothBikeService _bluetoothBikeService;
+  late final BluetoothTreadmillService _bluetoothTreadmillService;
+  late final BluetoothFrequencyMeterService _bluetoothFrequencyMeterService;
+
   @override
   void initState() {
     super.initState();
     _bluetoothEquipmentBloc = context.read<BluetoothEquipmentBloc>();
+
+    _bluetoothBikeService = BluetoothBikeService.instance;
+    _bluetoothTreadmillService = BluetoothTreadmillService.instance;
+    _bluetoothFrequencyMeterService = BluetoothFrequencyMeterService.instance;
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BluetoothEquipmentBloc, BluetoothEquipmentState>(
+    return BlocBuilder<BluetoothEquipmentBloc, BluetoothEquipmentState>(
         bloc: _bluetoothEquipmentBloc,
-        listener: (context, state) {},
         builder: (context, state) {
+          bool isConnected = (widget.bluetoothEquipment ==
+                      _bluetoothBikeService.connectedBike ||
+                  widget.bluetoothEquipment ==
+                      _bluetoothTreadmillService.connectedTreadmill ||
+                  widget.bluetoothEquipment ==
+                      _bluetoothFrequencyMeterService.connectedFrequencyMeter)
+              ? true
+              : false;
+
           return GestureDetector(
             onTap: () {
-              if (state is! BluetoothEquipmentConnectedState) {
+              if (!isConnected) {
                 _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
                   bluetoothEquipment: widget.bluetoothEquipment,
                 ));
@@ -191,6 +213,8 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
                   bluetoothEquipment: widget.bluetoothEquipment,
                 ));
               }
+
+              widget.refreshList.call();
             },
             child: Card(
               shape: RoundedRectangleBorder(
@@ -207,7 +231,7 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
                 subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
                 trailing: state is BluetoothEquipmentConnectingState
                     ? const CircularProgressIndicator()
-                    : state is BluetoothEquipmentConnectedState
+                    : isConnected
                         ? const Icon(Icons.close)
                         : const Text(
                             'Conectar',

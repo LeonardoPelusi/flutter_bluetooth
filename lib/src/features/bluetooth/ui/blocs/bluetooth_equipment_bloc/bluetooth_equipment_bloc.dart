@@ -5,7 +5,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/extension.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/bluetooth_helper.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
@@ -34,15 +33,17 @@ class BluetoothEquipmentBloc
   // final TrainingFlowData _trainingFlowData;
 
   // Bluetooth Services
-  final BluetoothBikeService _bleBikeService =
-      BluetoothEquipmentService.instance.bikeService;
+  final BluetoothBikeService _bleBikeService = BluetoothBikeService.instance;
   final BluetoothTreadmillService _bleTreadmillService =
-      BluetoothEquipmentService.instance.treadmillService;
+      BluetoothTreadmillService.instance;
   final BluetoothFrequencyMeterService _bleFrequencyMeterService =
-      BluetoothEquipmentService.instance.frequencyMeterService;
+      BluetoothFrequencyMeterService.instance;
 
   // Variables
   final Duration _directConnectionTimeoutDuration = const Duration(seconds: 10);
+
+  Timer? _broadcastResetTimer;
+  final Duration _broadcastTimerResetDuration = const Duration(minutes: 25);
 
   // Streams
   StreamSubscription<List<ScanResult>>? _broadcastSubscription;
@@ -62,7 +63,7 @@ class BluetoothEquipmentBloc
     ));
 
     // !TODO implementar lógica broadcast
-    if (BluetoothHelper.isBike(bluetoothEquipment.equipment)) {
+    if (BluetoothEquipmentService.isBroadcastConnection) {
       add(BluetoothEquipmentBroadcastConnectEvent(
         bluetoothEquipment: bluetoothEquipment,
       ));
@@ -81,24 +82,24 @@ class BluetoothEquipmentBloc
       case BluetoothEquipmentType.bikeGoper ||
             BluetoothEquipmentType.bikeKeiser:
         if (_bleBikeService.connectedBike != null) {
-          add(BluetoothEquipmentDisconnectEvent(
-            bluetoothEquipment: _bleBikeService.connectedBike!,
-          ));
+          _bleBikeService.cleanBikeData();
+          await event.bluetoothEquipment.equipment.disconnect();
+          if (FlutterBluePlus.isScanningNow) {
+            FlutterBluePlus.stopScan();
+          }
         }
         break;
       case BluetoothEquipmentType.treadmill:
         if (_bleTreadmillService.connectedTreadmill != null) {
-          add(BluetoothEquipmentDisconnectEvent(
-            bluetoothEquipment: _bleTreadmillService.connectedTreadmill!,
-          ));
+          await event.bluetoothEquipment.equipment.disconnect();
+          _bleTreadmillService.cleanTreadmillData();
         }
         break;
       case BluetoothEquipmentType.frequencyMeter:
         if (_bleFrequencyMeterService.connectedFrequencyMeter != null) {
-          add(BluetoothEquipmentDisconnectEvent(
-            bluetoothEquipment:
-                _bleFrequencyMeterService.connectedFrequencyMeter!,
-          ));
+          await event.bluetoothEquipment.equipment.disconnect();
+          _bleFrequencyMeterService.clearUserData();
+          _bleFrequencyMeterService.cleanFequencyMeterData();
         }
         break;
       default:
@@ -112,9 +113,9 @@ class BluetoothEquipmentBloc
   ) async {
     final BluetoothEquipmentModel bluetoothEquipment = event.bluetoothEquipment;
 
-    emit(
-      BluetoothEquipmentConnectedState(connectedEquipment: bluetoothEquipment),
-    );
+    emit(BluetoothEquipmentConnectedState(
+      connectedEquipment: bluetoothEquipment,
+    ));
 
     _bleBikeService.updateConnectedBike(bluetoothEquipment);
 
@@ -151,24 +152,19 @@ class BluetoothEquipmentBloc
       }
     });
 
-    // é necessário reiniciar o broadcast depois de 30min
-    await FlutterBluePlus.startScan(
-      timeout: const Duration(minutes: 25),
-    );
+    await FlutterBluePlus.startScan();
 
-    await FlutterBluePlus.isScanning
-        .where((val) => val == false)
-        .first
-        .then((_) {
-      // Caso _broadcastSubscription seja diferente de nulo, então deve reiniciar o broadcast
-      if (_broadcastSubscription != null) {
+    _broadcastResetTimer?.cancel();
+    // é necessário reiniciar o broadcast depois de 30min
+    _broadcastResetTimer = Timer(
+      _broadcastTimerResetDuration,
+      () {
         add(
           BluetoothEquipmentBroadcastConnectEvent(
-            bluetoothEquipment: bluetoothEquipment,
-          ),
+              bluetoothEquipment: bluetoothEquipment),
         );
-      }
-    });
+      },
+    );
   }
 
   Future<void> _directConnect(
@@ -280,10 +276,11 @@ class BluetoothEquipmentBloc
     switch (event.bluetoothEquipment.equipmentType) {
       case BluetoothEquipmentType.bikeKeiser ||
             BluetoothEquipmentType.bikeGoper:
-        _broadcastSubscription?.cancel();
-        _broadcastSubscription = null;
-        if (FlutterBluePlus.isScanningNow) {
-          FlutterBluePlus.stopScan();
+        if (BluetoothEquipmentService.isBroadcastConnection) {
+          _broadcastResetTimer?.cancel();
+          _broadcastResetTimer = null;
+          _broadcastSubscription?.cancel();
+          _broadcastSubscription = null;
         }
         _bleBikeService.cleanBikeData();
         break;

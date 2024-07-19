@@ -20,14 +20,7 @@ class BluetoothEquipmentService {
 
   static BluetoothGuid get guids => _BluetoothGuid();
 
-  // Equipments Services
-  BluetoothBikeService get bikeService => BluetoothBikeService._instance;
-  BluetoothTreadmillService get treadmillService =>
-      BluetoothTreadmillService._instance;
-  BluetoothFrequencyMeterService get frequencyMeterService =>
-      BluetoothFrequencyMeterService._instance;
-
-  static final bool _isBroadcastConnection = false;
+  static bool isBroadcastConnection = true;
 
   String getEquipmentId({
     required Iterable<List<int>> manufacturerData,

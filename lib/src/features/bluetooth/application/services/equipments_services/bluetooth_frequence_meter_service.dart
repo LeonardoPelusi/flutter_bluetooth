@@ -1,7 +1,7 @@
 part of 'bluetooth_equipment_service.dart';
 
 class BluetoothFrequencyMeterService {
-  static BluetoothFrequencyMeterService get _instance =>
+  static BluetoothFrequencyMeterService get instance =>
       BluetoothFrequencyMeterService();
 
   final BleFrequencyMeterMetricsNotifier _bleFrequencyMeterMetricsNotifier =

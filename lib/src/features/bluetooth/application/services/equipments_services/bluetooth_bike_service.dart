@@ -1,7 +1,7 @@
 part of 'bluetooth_equipment_service.dart';
 
 class BluetoothBikeService {
-  static BluetoothBikeService get _instance => BluetoothBikeService();
+  static BluetoothBikeService get instance => BluetoothBikeService();
 
   final BleBikeMetricsNotifier _bleBikeMetricsNotifier =
       BleBikeMetricsNotifier.instance;
@@ -26,7 +26,7 @@ class BluetoothBikeService {
   double cadenceResolution = 0.5;
 
   // Equipamento Conectado Atualmente
-  BluetoothEquipmentModel? _connectedBike;
+  static BluetoothEquipmentModel? _connectedBike;
   BluetoothEquipmentModel? get connectedBike => _connectedBike;
 
   void updateConnectedBike(BluetoothEquipmentModel bike) {
