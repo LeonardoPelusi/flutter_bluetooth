@@ -7,7 +7,7 @@ import 'package:flutter_bluetooth/src/features/bluetooth/application/services/eq
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_bloc/bluetooth_equipments_list_bloc.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_list_bloc/bluetooth_equipments_list_bloc.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_status_cubit/bluetooth_status_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
@@ -65,7 +65,6 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
               BluetoothEquipmentsListState>(
           bloc: _bluetoothEquipmentsListBloc,
           builder: (context, state) {
-            print(state);
             if (state is BluetoothEquipmentsListInitialState) {
               return Center(
                 child: ElevatedButton(
@@ -127,9 +126,6 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                               ),
                               child: BluetoothItemWidget(
                                 bluetoothEquipment: bluetoothEquipment,
-                                refreshList: () {
-                                  setState(() {});
-                                },
                               ),
                             ),
                           ),
@@ -159,11 +155,9 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
 }
 
 class BluetoothItemWidget extends StatefulWidget {
-  final VoidCallback refreshList;
   final BluetoothEquipmentModel bluetoothEquipment;
   const BluetoothItemWidget({
     required this.bluetoothEquipment,
-    required this.refreshList,
     super.key,
   });
 
@@ -213,8 +207,6 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
                   bluetoothEquipment: widget.bluetoothEquipment,
                 ));
               }
-
-              widget.refreshList.call();
             },
             child: Card(
               shape: RoundedRectangleBorder(
