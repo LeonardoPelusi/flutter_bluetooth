@@ -20,7 +20,7 @@ class BluetoothEquipmentService {
 
   static BluetoothGuid get guids => _BluetoothGuid();
 
-  static bool isBroadcastConnection = true;
+  static bool isBroadcastConnection = false;
 
   String getEquipmentId({
     required Iterable<List<int>> manufacturerData,
