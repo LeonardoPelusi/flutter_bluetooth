@@ -1,37 +1,41 @@
 import 'dart:async';
 
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
-
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
-part 'bluetooth_equipments_list_event.dart';
-part 'bluetooth_equipments_list_state.dart';
+part 'bluetooth_equipments_state.dart';
 
-class BluetoothEquipmentsListBloc
-    extends Bloc<BluetoothEquipmentsListEvent, BluetoothEquipmentsListState> {
-  BluetoothEquipmentsListBloc({
-    required this.bluetoothConnectFTMS,
-  }
-      //!TODO Adicionar bluetooth shared preferences service
-      // this._bluetoothSharedPreferencesService,
-      ) : super(BluetoothEquipmentsListInitialState()) {
-    on<BluetoothEquipmentsListStartScanEvent>(_startScan);
-    on<BluetoothEquipmentsListOnDeviceDiscoveredEvent>(_onDeviceDiscovered);
+abstract class BluetoothEquipmentsCubit
+    extends Cubit<BluetoothEquipmentsState> {
+  BluetoothEquipmentsCubit() : super(const BluetoothEquipmentsState());
 
+  Future<void> startScan({
+    Duration resetTime,
+  });
+
+  Future<void> connectDevice(
+    BluetoothEquipmentModel equipment,
+  );
+}
+
+class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
+  BluetoothEquipmentsCubitImpl(
+    this._bluetoothConnectFTMS,
+    // this._bluetoothSharedPreferencesService,
+  ) : super() {
     _flutterReactiveBle.statusStream.listen((event) {
       if (event == BleStatus.ready) {
         // Caso o equipamento seja uma esteira-usb não será necessário
         // realizar esses processos
         // if (!_isTreadmillUSB) {
-        // add(BluetoothEquipmentsListStartScanEvent());
+        // add(BluetoothEquipmentsStartScanEvent());
         //   add(BluetoothEquipmentsBackgroundScanEvent());
         // }
       } else {
@@ -40,7 +44,7 @@ class BluetoothEquipmentsListBloc
     });
   }
 
-  final BluetoothConnectFTMS bluetoothConnectFTMS;
+  final BluetoothConnectFTMS _bluetoothConnectFTMS;
   // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
 
   // Services
@@ -49,39 +53,33 @@ class BluetoothEquipmentsListBloc
       BluetoothEquipmentService.instance;
 
   // Control Variables
-  StreamSubscription<DiscoveredDevice>? _subscription;
+  StreamSubscription<DiscoveredDevice>? _scanSubscription;
   Timer? _resetTimer;
+  final Duration _connectionTimeoutDuration = const Duration(seconds: 10);
 
-  Future<void> _startScan(
-    BluetoothEquipmentsListStartScanEvent event,
-    Emitter<BluetoothEquipmentsListState> emit,
-  ) async {
-    emit(BluetoothEquipmentsListLoadingState());
+  // ======================== Scan Methods ========================
 
+  @override
+  Future<void> startScan({
+    Duration resetTime = const Duration(minutes: 25),
+  }) async {
     await _setSubscription();
     _resetTimer?.cancel();
     _resetTimer =
-        Timer.periodic(event.resetTime, (_) async => await _setSubscription());
+        Timer.periodic(resetTime, (_) async => await _setSubscription());
   }
 
   Future<void> _setSubscription() async {
     await _flutterReactiveBle.deinitialize();
     await _flutterReactiveBle.initialize();
-    _subscription?.cancel();
-    _subscription = _flutterReactiveBle.scanForDevices(
+    _scanSubscription?.cancel();
+    _scanSubscription = _flutterReactiveBle.scanForDevices(
       withServices: [],
       scanMode: ScanMode.lowLatency,
-    ).listen((device) {
-      add(BluetoothEquipmentsListOnDeviceDiscoveredEvent(device: device));
-    });
+    ).listen(_onDeviceDiscovered);
   }
 
-  Future<void> _onDeviceDiscovered(
-    BluetoothEquipmentsListOnDeviceDiscoveredEvent event,
-    Emitter<BluetoothEquipmentsListState> emit,
-  ) async {
-    final DiscoveredDevice device = event.device;
-
+  void _onDeviceDiscovered(DiscoveredDevice device) {
     final BluetoothEquipmentType equipmentType =
         BluetoothHelper.getBluetoothEquipmentType(device);
 
@@ -98,15 +96,71 @@ class BluetoothEquipmentsListBloc
       equipmentType: equipmentType,
     );
 
-    if (!state.bluetoothEquipments.contains(newEquipment)) {
-      emit(BluetoothEquipmentsListAddEquipmentState(
-        bluetoothEquipments: [
-          ...state.bluetoothEquipments,
-          newEquipment,
-        ],
+    bool contains = false;
+
+    for (BluetoothEquipmentModel equipment in state.bluetoothEquipments) {
+      if (equipment.id == newId) {
+        contains = true;
+        return;
+      }
+      contains = false;
+    }
+
+    if (!contains) {
+      emit(state.copyWith(
+        bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
       ));
+    } else {
+      // TODO: Tratar métricas broadcast
+      if(state.connectedEquipments.contains(newEquipment)) {
+        
+      }
     }
   }
+
+  // ====================== End Start Scan ======================
+
+  // ====================== Connect Methods ======================
+
+  @override
+  Future<void> connectDevice(BluetoothEquipmentModel equipment) async {
+    late StreamSubscription<ConnectionStateUpdate> connectionStream;
+
+    connectionStream = _flutterReactiveBle
+        .connectToDevice(
+      id: equipment.equipment.id,
+      connectionTimeout: _connectionTimeoutDuration,
+    )
+        .listen((equipmentState) {
+      switch (equipmentState.connectionState) {
+        case DeviceConnectionState.connecting:
+          break;
+        case DeviceConnectionState.connected:
+          break;
+        case DeviceConnectionState.disconnecting:
+          break;
+        case DeviceConnectionState.disconnected:
+          break;
+        default:
+          break;
+      }
+
+      if (equipmentState.failure != null) {
+        switch (equipmentState.failure?.code) {
+          case ConnectionError.failedToConnect:
+            break;
+          case ConnectionError.unknown:
+            break;
+          default:
+            break;
+        }
+      }
+    }, onError: (e) async {
+      await connectionStream.cancel();
+    });
+  }
+
+  // ==================== End Connect Methods ====================
 
   @override
   Future<void> close() async {
@@ -117,7 +171,7 @@ class BluetoothEquipmentsListBloc
     Bluetooth.treadmillConnected.value = TreadmillBleController(
         deviceConnected: false, openBox: true, openFooter: true);
 
-    await _subscription?.cancel();
+    await _scanSubscription?.cancel();
     _resetTimer?.cancel();
     _flutterReactiveBle.deinitialize();
     super.close();
@@ -126,8 +180,8 @@ class BluetoothEquipmentsListBloc
   // !TODO BLUETOOTH: Implementar Automatic Connect
 
   // Future<void> _automaticConnect(
-  //   BluetoothEquipmentsListAutomacticConnectEvent event,
-  //   Emitter<BluetoothEquipmentsListState> emit,
+  //   BluetoothEquipmentsAutomacticConnectEvent event,
+  //   Emitter<BluetoothEquipmentsState> emit,
   // ) async {
   //   if (bikeList.length == 1 && treadmillList.isEmpty) {
   //     bikeList[0].equipment.connect();

@@ -1,11 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/grid_view_widget.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_list_bloc/bluetooth_equipments_list_bloc.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
   const BluetoothScreen({super.key});
@@ -14,9 +12,9 @@ class BluetoothScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<BluetoothEquipmentsListBloc>(
-          create: (context) => BluetoothEquipmentsListBloc(
-            bluetoothConnectFTMS: BluetoothConnectFTMS.all,
+        BlocProvider<BluetoothEquipmentsCubit>(
+          create: (context) => BluetoothEquipmentsCubitImpl(
+            BluetoothConnectFTMS.all,
           ),
         ),
       ],
@@ -33,12 +31,12 @@ class _BluetoothScreen extends StatefulWidget {
 }
 
 class _BluetoothScreenState extends State<_BluetoothScreen> {
-  late final BluetoothEquipmentsListBloc _bluetoothEquipmentsListBloc;
+  late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
   @override
   void initState() {
     super.initState();
-    _bluetoothEquipmentsListBloc = context.read<BluetoothEquipmentsListBloc>();
+    _bluetoothEquipmentsCubit = context.read<BluetoothEquipmentsCubit>();
   }
 
   @override
@@ -47,43 +45,19 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
       appBar: AppBar(
         title: const Text('Bluetooth'),
       ),
-      body: BlocBuilder<BluetoothEquipmentsListBloc,
-              BluetoothEquipmentsListState>(
-          bloc: _bluetoothEquipmentsListBloc,
+      body: BlocBuilder<BluetoothEquipmentsCubit, BluetoothEquipmentsState>(
+          bloc: _bluetoothEquipmentsCubit,
+          buildWhen: (previous, current) =>
+              previous.bluetoothEquipments != current.bluetoothEquipments,
           builder: (context, state) {
-            if (state is BluetoothEquipmentsListInitialState) {
+            print('passou aqui');
+            if (state.bluetoothEquipments.isEmpty) {
               return Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    _bluetoothEquipmentsListBloc.add(
-                      BluetoothEquipmentsListStartScanEvent(),
-                    );
+                    _bluetoothEquipmentsCubit.startScan();
                   },
                   child: const Text('Start Scan'),
-                ),
-              );
-            }
-            if (state is BluetoothEquipmentsListLoadingState) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if (state.bluetoothEquipments.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('No Bluetooth Devices Found'),
-                    ElevatedButton(
-                      onPressed: () {
-                        _bluetoothEquipmentsListBloc.add(
-                          BluetoothEquipmentsListStartScanEvent(),
-                        );
-                      },
-                      child: const Text('Restart Scan'),
-                    ),
-                  ],
                 ),
               );
             }
@@ -101,26 +75,13 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                       final bluetoothEquipment =
                           state.bluetoothEquipments[index];
 
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical:
-                                  MediaQuery.of(context).size.height * 0.005,
-                            ),
-                            child: BluetoothItemWidget(
-                              bluetoothEquipment: bluetoothEquipment,
-                            ),
-                          ),
-                          if (index ==
-                                  state.bluetoothEquipments.indexOf(
-                                      state.bluetoothEquipments.last) &&
-                              state is BluetoothEquipmentsListAddEquipmentState)
-                            Container(
-                              margin: const EdgeInsets.only(top: 20),
-                              child: const CircularProgressIndicator(),
-                            ),
-                        ],
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: MediaQuery.of(context).size.height * 0.005,
+                        ),
+                        child: BluetoothItemWidget(
+                          bluetoothEquipment: bluetoothEquipment,
+                        ),
                       );
                     },
                   ),
