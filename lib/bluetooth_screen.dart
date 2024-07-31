@@ -3,12 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/grid_view_widget.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipment_bloc/bluetooth_equipment_bloc.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_list_bloc/bluetooth_equipments_list_bloc.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_status_cubit/bluetooth_status_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
   const BluetoothScreen({super.key});
@@ -17,12 +14,8 @@ class BluetoothScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<BluetoothStatusCubit>(
-          create: (_) => BluetoothStatusCubitImpl(),
-        ),
         BlocProvider<BluetoothEquipmentsListBloc>(
           create: (context) => BluetoothEquipmentsListBloc(
-            context.read<BluetoothStatusCubit>(),
             bluetoothConnectFTMS: BluetoothConnectFTMS.all,
           ),
         ),
@@ -52,14 +45,7 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bluetooth'),
-        actions: [
-          IconButton(
-            onPressed: () => _bluetoothEquipmentsListBloc
-                .add(BluetoothEquipmentsListNewScanEvent()),
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
+        title: const Text('Bluetooth'),
       ),
       body: BlocBuilder<BluetoothEquipmentsListBloc,
               BluetoothEquipmentsListState>(
@@ -70,7 +56,7 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     _bluetoothEquipmentsListBloc.add(
-                      BluetoothEquipmentsListNewScanEvent(),
+                      BluetoothEquipmentsListStartScanEvent(),
                     );
                   },
                   child: const Text('Start Scan'),
@@ -92,7 +78,7 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                     ElevatedButton(
                       onPressed: () {
                         _bluetoothEquipmentsListBloc.add(
-                          BluetoothEquipmentsListNewScanEvent(),
+                          BluetoothEquipmentsListStartScanEvent(),
                         );
                       },
                       child: const Text('Restart Scan'),
@@ -117,16 +103,13 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
 
                       return Column(
                         children: [
-                          BlocProvider<BluetoothEquipmentBloc>(
-                            create: (_) => BluetoothEquipmentBloc(),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical:
-                                    MediaQuery.of(context).size.height * 0.005,
-                              ),
-                              child: BluetoothItemWidget(
-                                bluetoothEquipment: bluetoothEquipment,
-                              ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical:
+                                  MediaQuery.of(context).size.height * 0.005,
+                            ),
+                            child: BluetoothItemWidget(
+                              bluetoothEquipment: bluetoothEquipment,
                             ),
                           ),
                           if (index ==
@@ -166,76 +149,38 @@ class BluetoothItemWidget extends StatefulWidget {
 }
 
 class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
-  late final BluetoothEquipmentBloc _bluetoothEquipmentBloc;
-
-  late final BluetoothBikeService _bluetoothBikeService;
-  late final BluetoothTreadmillService _bluetoothTreadmillService;
-  late final BluetoothFrequencyMeterService _bluetoothFrequencyMeterService;
-
   @override
   void initState() {
     super.initState();
-    _bluetoothEquipmentBloc = context.read<BluetoothEquipmentBloc>();
-
-    _bluetoothBikeService = BluetoothBikeService.instance;
-    _bluetoothTreadmillService = BluetoothTreadmillService.instance;
-    _bluetoothFrequencyMeterService = BluetoothFrequencyMeterService.instance;
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BluetoothEquipmentBloc, BluetoothEquipmentState>(
-        bloc: _bluetoothEquipmentBloc,
-        builder: (context, state) {
-          bool isConnected = (widget.bluetoothEquipment ==
-                      _bluetoothBikeService.connectedBike ||
-                  widget.bluetoothEquipment ==
-                      _bluetoothTreadmillService.connectedTreadmill ||
-                  widget.bluetoothEquipment ==
-                      _bluetoothFrequencyMeterService.connectedFrequencyMeter)
-              ? true
-              : false;
-
-          return GestureDetector(
-            onTap: () {
-              if (!isConnected) {
-                _bluetoothEquipmentBloc.add(BluetoothEquipmentConnectEvent(
-                  bluetoothEquipment: widget.bluetoothEquipment,
-                ));
-              } else {
-                _bluetoothEquipmentBloc.add(BluetoothEquipmentDisconnectEvent(
-                  bluetoothEquipment: widget.bluetoothEquipment,
-                ));
-              }
-            },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-                side: BorderSide(
-                  color: Colors.black,
-                ),
-              ),
-              elevation: 16,
-              shadowColor: Colors.black,
-              child: ListTile(
-                title: Text(
-                    '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.platformName}'),
-                subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
-                trailing: state is BluetoothEquipmentConnectingState
-                    ? const CircularProgressIndicator()
-                    : isConnected
-                        ? const Icon(Icons.close)
-                        : const Text(
-                            'Conectar',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.blue,
-                            ),
-                          ),
-              ),
+    return GestureDetector(
+      onTap: () {},
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(
+            color: Colors.black,
+          ),
+        ),
+        elevation: 16,
+        shadowColor: Colors.black,
+        child: ListTile(
+          title: Text(
+              '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.name}'),
+          subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
+          trailing: const Text(
+            'Conectar',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.blue,
             ),
-          );
-        });
+          ),
+        ),
+      ),
+    );
   }
 }

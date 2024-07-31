@@ -11,8 +11,8 @@ class BluetoothTreadmillService {
   double speedBest = 0;
 
   // Serviços
-  late BluetoothService _fitnessMachineService;
-  late BluetoothCharacteristic _treadmillFitnessData;
+  // late BluetoothService _fitnessMachineService;
+  // late BluetoothCharacteristic _treadmillFitnessData;
 
   // Stream
   StreamSubscription? treadmillCharacteristicStream;
@@ -30,57 +30,57 @@ class BluetoothTreadmillService {
   }
 
   //seleciona treadmill para trazer métricas da esteira
-  Future<void> getTreadmillData(List<BluetoothService> _services) async {
-    _resetVariables();
+  // Future<void> getTreadmillData(List<BluetoothService> _services) async {
+  //   _resetVariables();
 
-    _fitnessMachineService = _services.firstWhere((service) =>
-        service.uuid == BluetoothEquipmentService.guids.fitnessMachineService);
+  //   _fitnessMachineService = _services.firstWhere((service) =>
+  //       service.uuid == BluetoothEquipmentService.guids.fitnessMachineService);
 
-    _treadmillFitnessData = _fitnessMachineService.characteristics.firstWhere(
-      (characteristic) =>
-          characteristic.uuid ==
-          BluetoothEquipmentService.guids.treadmillFitnessData,
-    );
+  //   _treadmillFitnessData = _fitnessMachineService.characteristics.firstWhere(
+  //     (characteristic) =>
+  //         characteristic.uuid ==
+  //         BluetoothEquipmentService.guids.treadmillFitnessData,
+  //   );
 
-    treadmillCharacteristicStream =
-        _treadmillFitnessData.lastValueStream.listen((value) {
-      treadmillData = value;
-      int byte = 2;
+  //   treadmillCharacteristicStream =
+  //       _treadmillFitnessData.lastValueStream.listen((value) {
+  //     treadmillData = value;
+  //     int byte = 2;
 
-      if (treadmillData.isNotEmpty) {
-        late double speed;
-        late double inclination;
-        late int instaPower;
+  //     if (treadmillData.isNotEmpty) {
+  //       late double speed;
+  //       late double inclination;
+  //       late int instaPower;
 
-        speed = ((treadmillData[byte + 1] << 8 | (treadmillData[byte]))
-                .toDouble()) /
-            100;
-        byte += 2;
+  //       speed = ((treadmillData[byte + 1] << 8 | (treadmillData[byte]))
+  //               .toDouble()) /
+  //           100;
+  //       byte += 2;
 
-        if (speed > speedBest) speedBest = speed;
+  //       if (speed > speedBest) speedBest = speed;
 
-        if (treadmillData[0] & 0x04 == 0x04) {
-          byte += 3;
-        }
+  //       if (treadmillData[0] & 0x04 == 0x04) {
+  //         byte += 3;
+  //       }
 
-        inclination = (treadmillData[byte].toDouble());
+  //       inclination = (treadmillData[byte].toDouble());
 
-        instaPower = _powerForTreadmill(speed, inclination).round();
+  //       instaPower = _powerForTreadmill(speed, inclination).round();
 
-        if (instaPower != 0) {
-          if (instaPower > powerBest) powerBest = instaPower;
-        }
+  //       if (instaPower != 0) {
+  //         if (instaPower > powerBest) powerBest = instaPower;
+  //       }
 
-        _bleTreadmillMetricsNotifier.updateMetrics(
-          newInstaPower: instaPower,
-          newSpeed: speed,
-          newInclination: inclination,
-        );
-      }
-    });
-    Future.delayed(const Duration(milliseconds: 1500));
-    await _treadmillFitnessData.setNotifyValue(true);
-  }
+  //       _bleTreadmillMetricsNotifier.updateMetrics(
+  //         newInstaPower: instaPower,
+  //         newSpeed: speed,
+  //         newInclination: inclination,
+  //       );
+  //     }
+  //   });
+  //   Future.delayed(const Duration(milliseconds: 1500));
+  //   await _treadmillFitnessData.setNotifyValue(true);
+  // }
 
   void _resetVariables() {
     _bleTreadmillMetricsNotifier.clearMetrics();

@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class BluetoothEquipmentModel extends Equatable {
   final String id;
-  final BluetoothDevice equipment;
+  final DiscoveredDevice equipment;
   final BluetoothEquipmentType equipmentType;
 
   const BluetoothEquipmentModel({

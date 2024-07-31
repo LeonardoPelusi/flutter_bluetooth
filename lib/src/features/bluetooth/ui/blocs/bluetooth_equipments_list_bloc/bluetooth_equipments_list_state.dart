@@ -7,42 +7,20 @@ sealed class BluetoothEquipmentsListState extends Equatable {
   const BluetoothEquipmentsListState({
     this.bluetoothEquipments = const [],
   });
-}
 
-final class BluetoothEquipmentsListInitialState extends BluetoothEquipmentsListState {
   @override
   List<Object?> get props => [bluetoothEquipments];
 }
+
+final class BluetoothEquipmentsListInitialState
+    extends BluetoothEquipmentsListState {}
 
 final class BluetoothEquipmentsListLoadingState
-    extends BluetoothEquipmentsListState {
-  @override
-  List<Object?> get props => [bluetoothEquipments];
-}
+    extends BluetoothEquipmentsListState {}
 
 final class BluetoothEquipmentsListAddEquipmentState
     extends BluetoothEquipmentsListState {
   const BluetoothEquipmentsListAddEquipmentState({
-    required super.bluetoothEquipments,
-  });
-
-  @override
-  List<Object?> get props => [bluetoothEquipments];
-}
-
-final class BluetoothEquipmentsBackgroundListLoadedState
-    extends BluetoothEquipmentsListState {
-  const BluetoothEquipmentsBackgroundListLoadedState({
-    required super.bluetoothEquipments,
-  });
-
-  @override
-  List<Object?> get props => [bluetoothEquipments];
-}
-
-final class BluetoothEquipmentsListLoadedState
-    extends BluetoothEquipmentsListState {
-  const BluetoothEquipmentsListLoadedState({
     required super.bluetoothEquipments,
   });
 
