@@ -36,21 +36,21 @@ class GridViewWidget extends StatelessWidget {
               ),
               const _CustomDivider(),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaCadence,
+                valueListenable: BleBikeMetricsNotifier.cadence,
                 builder: (context, value, child) => Text(
                   'Cadencia: $value',
                   style: textStyle,
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.instaPower,
+                valueListenable: BleBikeMetricsNotifier.power,
                 builder: (context, value, child) => Text(
                   'Potência: $value',
                   style: textStyle,
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.resistanceLevel,
+                valueListenable: BleBikeMetricsNotifier.resistance,
                 builder: (context, value, child) => Text(
                   'Resistência: $value',
                   style: textStyle,

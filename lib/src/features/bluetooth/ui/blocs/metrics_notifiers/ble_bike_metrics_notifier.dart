@@ -7,9 +7,9 @@ class BleBikeMetricsNotifier extends ChangeNotifier {
   static ValueNotifier<bool> isConnected = ValueNotifier<bool>(false);
 
   //Métricas que serão exibidas
-  static ValueNotifier<int> instaCadence = ValueNotifier<int>(0);
-  static ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
-  static ValueNotifier<int> resistanceLevel = ValueNotifier<int>(0);
+  static ValueNotifier<int> cadence = ValueNotifier<int>(0);
+  static ValueNotifier<int> power = ValueNotifier<int>(-1);
+  static ValueNotifier<int> resistance = ValueNotifier<int>(0);
   static ValueNotifier<double> speed = ValueNotifier<double>(0);
 
   void updateIsConnectedValue(bool newValue) {
@@ -18,22 +18,22 @@ class BleBikeMetricsNotifier extends ChangeNotifier {
   }
 
   void updateMetrics({
-    required int newInstaCadence,
-    required int newInstaPower,
-    required int newResistanceLevel,
+    required int newCadence,
+    required int newPower,
+    required int newResistance,
     required double newSpeed,
   }) {
-    instaCadence.value = newInstaCadence;
-    instaPower.value = newInstaPower;
-    resistanceLevel.value = newResistanceLevel;
+    cadence.value = newCadence;
+    power.value = newPower;
+    resistance.value = newResistance;
     speed.value = newSpeed;
     notifyListeners();
   }
 
   void clearMetrics() {
-    instaCadence.value = 0;
-    instaPower.value = -1;
-    resistanceLevel.value = 0;
+    cadence.value = 0;
+    power.value = -1;
+    resistance.value = 0;
     speed.value = 0;
     notifyListeners();
   }

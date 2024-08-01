@@ -7,6 +7,8 @@ part of 'bluetooth_serializer.dart';
 // -> NO FLUTTER BLUE PLUS, NO MANUFACTURER DATA NÃO VEM OS DOIS PRIMEIROS BYTES,
 //  PORTANTO IREMOS DESCONSIDERÁ-LOS NA HORA DA TRADUÇÃO.
 
+final bikeKeiserBroadcastSerializer = BikeKeiserBroadcastSerializer();
+
 class BikeKeiserBroadcastSerializer
     implements BluetoothSerializer<BikeKeiserBroadcast, Uint8List> {
   @override
@@ -52,5 +54,3 @@ class BikeKeiserBroadcastSerializer
     return dataType == 0 || (dataType >= 128 && dataType <= 227);
   }
 }
-
-final bikeKeiserBroadcastSerializer = BikeKeiserBroadcastSerializer();

@@ -50,7 +50,6 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
           buildWhen: (previous, current) =>
               previous.bluetoothEquipments != current.bluetoothEquipments,
           builder: (context, state) {
-            print('passou aqui');
             if (state.bluetoothEquipments.isEmpty) {
               return Center(
                 child: ElevatedButton(
@@ -110,19 +109,23 @@ class BluetoothItemWidget extends StatefulWidget {
 }
 
 class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
+  late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
+
   @override
   void initState() {
     super.initState();
+    _bluetoothEquipmentsCubit = context.read<BluetoothEquipmentsCubit>();
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () =>
+          _bluetoothEquipmentsCubit.connectDevice(widget.bluetoothEquipment),
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: BorderSide(
+          side: const BorderSide(
             color: Colors.black,
           ),
         ),

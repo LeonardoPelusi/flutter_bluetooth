@@ -52,6 +52,13 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   final BluetoothEquipmentService _bluetoothEquipmentService =
       BluetoothEquipmentService.instance;
 
+  // Bluetooth Services
+  final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
+  final BluetoothTreadmillService _treadmillService =
+      BluetoothTreadmillService.instance;
+  final BluetoothFrequencyMeterService _frequencyMeterService =
+      BluetoothFrequencyMeterService.instance;
+
   // Control Variables
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   Timer? _resetTimer;
@@ -90,12 +97,6 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       device: device,
     );
 
-    final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
-      id: newId,
-      equipment: device,
-      equipmentType: equipmentType,
-    );
-
     bool contains = false;
 
     for (BluetoothEquipmentModel equipment in state.bluetoothEquipments) {
@@ -106,15 +107,19 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       contains = false;
     }
 
+    final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
+      id: newId,
+      equipment: device,
+      equipmentType: equipmentType,
+    );
+
     if (!contains) {
       emit(state.copyWith(
         bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
       ));
     } else {
       // TODO: Tratar métricas broadcast
-      if(state.connectedEquipments.contains(newEquipment)) {
-        
-      }
+      if (state.connectedEquipments.contains(newEquipment)) {}
     }
   }
 
@@ -136,6 +141,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
         case DeviceConnectionState.connecting:
           break;
         case DeviceConnectionState.connected:
+          _listenToDeviceServices(equipment);
+
           break;
         case DeviceConnectionState.disconnecting:
           break;
@@ -158,6 +165,50 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     }, onError: (e) async {
       await connectionStream.cancel();
     });
+  }
+
+  Future<void> _listenToDeviceServices(
+      BluetoothEquipmentModel equipment) async {
+    List<Service> services =
+        await _flutterReactiveBle.getDiscoveredServices(equipment.equipment.id);
+
+    switch (equipment.equipmentType) {
+      case BluetoothEquipmentType.bikeGoper:
+        // _trainingFlowData.postBikeGraph = true;
+        // await _bluetoothSharedPreferencesService.bluetoothCryptoBikeGoper(
+        //   bikeId: bluetoothEquipment.equipment.id.id,
+        // );
+        _bikeService.updateConnectedBike(equipment);
+        await _bikeService.getIndoorBikeData(services);
+        break;
+      case BluetoothEquipmentType.treadmill:
+        // _trainingFlowData.postTreadmillGraph = true;
+
+        // await _bluetoothSharedPreferencesService
+        //     .bluetoothCryptoTreadmillBLE(
+        //   treadmillId: bluetoothEquipment.equipment.id.id,
+        // );
+        // _treadmillService.updateConnectedTreadmill(equipment);
+        // await _treadmillService.getTreadmillData(services);
+        break;
+      case BluetoothEquipmentType.frequencyMeter:
+        // _trainingFlowData.postBpmGraph = true;
+
+        // int userAge = _trainingFlowData.userAge!;
+        // double userWeight = _trainingFlowData.userWeight!;
+        // await _bleFrequencyMeterService.getUserData(
+        //   services,
+        //   userAge,
+        //   userWeight,
+        // );
+
+        // _frequencyMeterService
+        //     .updateConnectedFrequencyMeter(equipment);
+        // await _frequencyMeterService.getFrequencyMeterMeasurement(services);
+        break;
+      default:
+        break;
+    }
   }
 
   // ==================== End Connect Methods ====================
