@@ -18,7 +18,7 @@ class BluetoothBikeService {
   late Characteristic _bikeIndoorData;
 
   // Stream
-  late StreamSubscription<List<int>> _bikeCharacteristicStream;
+  StreamSubscription<List<int>>? _bikeCharacteristicStream;
 
   // Equipamento Conectado Atualmente
   static BluetoothEquipmentModel? _connectedBike;
@@ -86,7 +86,7 @@ class BluetoothBikeService {
   }
 
   void cleanBikeData() {
-    _bikeCharacteristicStream.cancel();
+    _bikeCharacteristicStream?.cancel();
     _connectedBike = null;
     _bleBikeMetricsNotifier.updateIsConnectedValue(false);
     _resetVariables();

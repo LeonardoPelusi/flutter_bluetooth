@@ -10,7 +10,10 @@ class BluetoothEquipmentsState extends Equatable {
   });
 
   @override
-  List<Object> get props => [bluetoothEquipments, connectedEquipments];
+  List<Object> get props => [
+        bluetoothEquipments,
+        connectedEquipments,
+      ];
 
   BluetoothEquipmentsState copyWith({
     List<BluetoothEquipmentModel>? bluetoothEquipments,
