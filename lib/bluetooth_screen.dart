@@ -119,32 +119,43 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () =>
-          _bluetoothEquipmentsCubit.connectDevice(widget.bluetoothEquipment),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-          side: const BorderSide(
-            color: Colors.black,
-          ),
-        ),
-        elevation: 16,
-        shadowColor: Colors.black,
-        child: ListTile(
-          title: Text(
-              '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.name}'),
-          subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
-          trailing: const Text(
-            'Conectar',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              color: Colors.blue,
+    return BlocBuilder<BluetoothEquipmentsCubit, BluetoothEquipmentsState>(
+        builder: (context, state) {
+      final bool connected =
+          state.connectedEquipments.contains(widget.bluetoothEquipment);
+
+      return GestureDetector(
+        onTap: () => connected
+            ? _bluetoothEquipmentsCubit
+                .disconnectDevice(widget.bluetoothEquipment)
+            : _bluetoothEquipmentsCubit
+                .connectDevice(widget.bluetoothEquipment),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: const BorderSide(
+              color: Colors.black,
             ),
           ),
+          elevation: 16,
+          shadowColor: Colors.black,
+          child: ListTile(
+            title: Text(
+                '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.name}'),
+            subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
+            trailing: connected
+                ? const Icon(Icons.close)
+                : const Text(
+                    'Conectar',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.blue,
+                    ),
+                  ),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

@@ -23,6 +23,10 @@ abstract class BluetoothEquipmentsCubit
   Future<void> connectDevice(
     BluetoothEquipmentModel equipment,
   );
+
+  Future<void> disconnectDevice(
+    BluetoothEquipmentModel equipment,
+  );
 }
 
 class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
@@ -54,13 +58,18 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
 
   // Bluetooth Services
   final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
-  final BluetoothTreadmillService _treadmillService =
-      BluetoothTreadmillService.instance;
-  final BluetoothFrequencyMeterService _frequencyMeterService =
-      BluetoothFrequencyMeterService.instance;
+  // final BluetoothTreadmillService _treadmillService =
+  //     BluetoothTreadmillService.instance;
+  // final BluetoothFrequencyMeterService _frequencyMeterService =
+  //     BluetoothFrequencyMeterService.instance;
 
-  // Control Variables
+  // Control Variables (Streams)
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
+  StreamSubscription<ConnectionStateUpdate>? _bikeStream;
+  // StreamController<ConnectionStateUpdate>? _treadmillStream;
+  // StreamController<ConnectionStateUpdate>? _frequencyMeterStream;
+
+  // Control Variables (Timers)
   Timer? _resetTimer;
   final Duration _connectionTimeoutDuration = const Duration(seconds: 10);
 
@@ -129,8 +138,26 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
 
   @override
   Future<void> connectDevice(BluetoothEquipmentModel equipment) async {
-    late StreamSubscription<ConnectionStateUpdate> connectionStream;
+    switch (equipment.equipmentType) {
+      case BluetoothEquipmentType.bikeGoper:
+        _listenToDeviceState(equipment, _bikeStream);
+        break;
+      case BluetoothEquipmentType.treadmill:
+        // _listenToDeviceState(equipment, _treadmillStream);
 
+        break;
+      case BluetoothEquipmentType.frequencyMeter:
+        // _listenToDeviceState(equipment, _frequencyMeterStream);
+        break;
+      default:
+        break;
+    }
+  }
+
+  Future<void> _listenToDeviceState(
+    BluetoothEquipmentModel equipment,
+    StreamSubscription<ConnectionStateUpdate>? connectionStream,
+  ) async {
     connectionStream = _flutterReactiveBle
         .connectToDevice(
       id: equipment.equipment.id,
@@ -142,11 +169,14 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
           break;
         case DeviceConnectionState.connected:
           _listenToDeviceServices(equipment);
-
+          emit(state.copyWith(
+            connectedEquipments: [...state.connectedEquipments, equipment],
+          ));
           break;
         case DeviceConnectionState.disconnecting:
           break;
         case DeviceConnectionState.disconnected:
+          disconnectDevice(equipment);
           break;
         default:
           break;
@@ -161,9 +191,11 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
           default:
             break;
         }
+        disconnectDevice(equipment);
       }
     }, onError: (e) async {
-      await connectionStream.cancel();
+      await connectionStream?.cancel();
+      disconnectDevice(equipment);
     });
   }
 
@@ -209,6 +241,33 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       default:
         break;
     }
+  }
+
+  @override
+  Future<void> disconnectDevice(BluetoothEquipmentModel equipment) async {
+    switch (equipment.equipmentType) {
+      case BluetoothEquipmentType.bikeKeiser ||
+            BluetoothEquipmentType.bikeGoper:
+        _bikeService.cleanBikeData();
+        _bikeStream?.cancel();
+        _bikeStream = null;
+        break;
+      case BluetoothEquipmentType.treadmill:
+        // _treadmillService.cleanTreadmillData();
+        break;
+      case BluetoothEquipmentType.frequencyMeter:
+        // _frequencyMeterService.clearUserData();
+        // _frequencyMeterService.cleanFequencyMeterData();
+        break;
+      default:
+        break;
+    }
+
+    emit(state.copyWith(
+      connectedEquipments: state.connectedEquipments
+          .where((element) => element.id != equipment.id)
+          .toList(),
+    ));
   }
 
   // ==================== End Connect Methods ====================

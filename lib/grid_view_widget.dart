@@ -1,18 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 
 class GridViewWidget extends StatelessWidget {
   const GridViewWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const TextStyle textStyle = TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    );
-
     return GridView.count(
       mainAxisSpacing: 20,
       crossAxisSpacing: 20,
@@ -22,109 +16,20 @@ class GridViewWidget extends StatelessWidget {
       crossAxisCount: 5,
       children: [
         const SizedBox(),
-        _GridViewItem(
-          title: 'Bike',
-          child: Column(
-            children: [
-              const _CustomDivider(),
-              ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.isConnected,
-                builder: (context, value, child) => Text(
-                  'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
-                  style: textStyle,
-                ),
-              ),
-              const _CustomDivider(),
-              ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.cadence,
-                builder: (context, value, child) => Text(
-                  'Cadencia: $value',
-                  style: textStyle,
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.power,
-                builder: (context, value, child) => Text(
-                  'Potência: $value',
-                  style: textStyle,
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.resistance,
-                builder: (context, value, child) => Text(
-                  'Resistência: $value',
-                  style: textStyle,
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: BleBikeMetricsNotifier.speed,
-                builder: (context, value, child) => Text(
-                  'Velociadade: $value',
-                  style: textStyle,
-                ),
-              ),
-            ],
-          ),
+        ValueListenableBuilder(
+          valueListenable: BleBikeMetricsNotifier.isConnected,
+          builder: (context, value, child) =>
+              value ? const _BikeItemWidget() : const SizedBox(),
         ),
-        _GridViewItem(
-          title: 'Esteira',
-          child: Column(
-            children: [
-              const _CustomDivider(),
-              ValueListenableBuilder(
-                valueListenable: BleTreadmillMetricsNotifier.isConnected,
-                builder: (context, value, child) => Text(
-                  'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
-                  style: textStyle,
-                ),
-              ),
-              const _CustomDivider(),
-              ValueListenableBuilder(
-                valueListenable: BleTreadmillMetricsNotifier.inclination,
-                builder: (context, value, child) => Text(
-                  'Inclinação: $value',
-                  style: textStyle,
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: BleTreadmillMetricsNotifier.instaPower,
-                builder: (context, value, child) => Text(
-                  'Potência: $value',
-                  style: textStyle,
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: BleTreadmillMetricsNotifier.speed,
-                builder: (context, value, child) => Text(
-                  'Velocidade: $value',
-                  style: textStyle,
-                ),
-              ),
-            ],
-          ),
+        ValueListenableBuilder(
+          valueListenable: BleTreadmillMetricsNotifier.isConnected,
+          builder: (context, value, child) =>
+              value ? const _TreadmillItemWidget() : const SizedBox(),
         ),
-        _GridViewItem(
-          title: 'MyBeat',
-          child: Column(
-            children: [
-              const _CustomDivider(),
-              ValueListenableBuilder(
-                valueListenable: BleFrequencyMeterMetricsNotifier.isConnected,
-                builder: (context, value, child) => Text(
-                  'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
-                  style: textStyle,
-                ),
-              ),
-              const _CustomDivider(),
-              ValueListenableBuilder(
-                valueListenable: BleFrequencyMeterMetricsNotifier.bpmValue,
-                builder: (context, value, child) => Text(
-                  'BPM: $value',
-                  style: textStyle,
-                ),
-              ),
-            ],
-          ),
+        ValueListenableBuilder(
+          valueListenable: BleFrequencyMeterMetricsNotifier.isConnected,
+          builder: (context, value, child) =>
+              value ? const _FrequencyMeterItemWidget() : const SizedBox(),
         ),
         const SizedBox(),
       ],
@@ -134,30 +39,141 @@ class GridViewWidget extends StatelessWidget {
 
 class _GridViewItem extends StatelessWidget {
   final String title;
-  final Widget child;
+  final List<Widget> children;
   const _GridViewItem({
     required this.title,
-    required this.child,
+    required this.children,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black.withOpacity(.1),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 50,
-            ),
+    return ResponsiveBuilder(
+      builder: (context, si) {
+        final TextStyle titleStyle = TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: si.isTablet ? 30 : 50,
+          color: Colors.black,
+        );
+
+        final TextStyle textStyle = TextStyle(
+          fontSize: si.isTablet ? 15 : 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        );
+
+        return Container(
+          color: Colors.black.withOpacity(.1),
+          child: Column(
+            children: [
+              Text(
+                title,
+                style: titleStyle,
+              ),
+              Expanded(
+                child: DefaultTextStyle(
+                  style: textStyle,
+                  child: Column(
+                    children: children,
+                  ),
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: child,
+        );
+      },
+    );
+  }
+}
+
+class _BikeItemWidget extends StatelessWidget {
+  const _BikeItemWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GridViewItem(
+      title: 'Bike',
+      children: [
+        const _CustomDivider(),
+        ValueListenableBuilder(
+          valueListenable: BleBikeMetricsNotifier.isConnected,
+          builder: (context, value, child) =>
+              Text('Status: ${value == true ? 'Conectado' : 'Desconectado'}'),
+        ),
+        const _CustomDivider(),
+        ValueListenableBuilder(
+          valueListenable: BleBikeMetricsNotifier.cadence,
+          builder: (context, value, child) => Text('Cadencia: $value'),
+        ),
+        ValueListenableBuilder(
+          valueListenable: BleBikeMetricsNotifier.power,
+          builder: (context, value, child) => Text('Potência: $value'),
+        ),
+        ValueListenableBuilder(
+          valueListenable: BleBikeMetricsNotifier.resistance,
+          builder: (context, value, child) => Text('Resistência: $value'),
+        ),
+        ValueListenableBuilder(
+          valueListenable: BleBikeMetricsNotifier.speed,
+          builder: (context, value, child) => Text('Velociadade: $value'),
+        ),
+      ],
+    );
+  }
+}
+
+class _TreadmillItemWidget extends StatelessWidget {
+  const _TreadmillItemWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GridViewItem(
+      title: 'Esteira',
+      children: [
+        const _CustomDivider(),
+        ValueListenableBuilder(
+          valueListenable: BleTreadmillMetricsNotifier.isConnected,
+          builder: (context, value, child) => Text(
+            'Status: ${value == true ? 'Conectado' : 'Desconectado'}',
           ),
-        ],
-      ),
+        ),
+        const _CustomDivider(),
+        ValueListenableBuilder(
+          valueListenable: BleTreadmillMetricsNotifier.inclination,
+          builder: (context, value, child) => Text('Inclinação: $value'),
+        ),
+        ValueListenableBuilder(
+          valueListenable: BleTreadmillMetricsNotifier.instaPower,
+          builder: (context, value, child) => Text('Potência: $value'),
+        ),
+        ValueListenableBuilder(
+          valueListenable: BleTreadmillMetricsNotifier.speed,
+          builder: (context, value, child) => Text('Velocidade: $value'),
+        ),
+      ],
+    );
+  }
+}
+
+class _FrequencyMeterItemWidget extends StatelessWidget {
+  const _FrequencyMeterItemWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _GridViewItem(
+      title: 'MyBeat',
+      children: [
+        const _CustomDivider(),
+        ValueListenableBuilder(
+          valueListenable: BleFrequencyMeterMetricsNotifier.isConnected,
+          builder: (context, value, child) =>
+              Text('Status: ${value == true ? 'Conectado' : 'Desconectado'}'),
+        ),
+        const _CustomDivider(),
+        ValueListenableBuilder(
+          valueListenable: BleFrequencyMeterMetricsNotifier.bpmValue,
+          builder: (context, value, child) => Text('BPM: $value'),
+        ),
+      ],
     );
   }
 }

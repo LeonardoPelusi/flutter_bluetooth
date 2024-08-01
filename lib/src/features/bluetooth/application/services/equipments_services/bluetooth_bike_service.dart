@@ -18,12 +18,7 @@ class BluetoothBikeService {
   late Characteristic _bikeIndoorData;
 
   // Stream
-  StreamSubscription? bikeCharacteristicStream;
-
-  // Dados
-  late List<int> bikeData;
-
-  double cadenceResolution = 0.5;
+  late StreamSubscription<List<int>> _bikeCharacteristicStream;
 
   // Equipamento Conectado Atualmente
   static BluetoothEquipmentModel? _connectedBike;
@@ -45,7 +40,7 @@ class BluetoothBikeService {
           characteristic.id == BluetoothEquipmentService.guids.bikeIndoorData,
     );
 
-    bikeCharacteristicStream = _bikeIndoorData.subscribe().listen((value) {
+    _bikeCharacteristicStream = _bikeIndoorData.subscribe().listen((value) {
       final BikeGoperBluetooth bikeGoperBluetooth =
           bikeGoperBluetoothSerializer.from(value);
 
@@ -91,6 +86,7 @@ class BluetoothBikeService {
   }
 
   void cleanBikeData() {
+    _bikeCharacteristicStream.cancel();
     _connectedBike = null;
     _bleBikeMetricsNotifier.updateIsConnectedValue(false);
     _resetVariables();
