@@ -47,7 +47,7 @@ class BluetoothEquipmentService {
       BluetoothEquipmentType equipmentType) {
     switch (equipmentType) {
       case BluetoothEquipmentType.bikeGoper:
-        return BluetoothConnectionType.directConnect;
+        return BluetoothConnectionType.broadcast;
       case BluetoothEquipmentType.bikeKeiser:
         return BluetoothConnectionType.broadcast;
       case BluetoothEquipmentType.treadmill:

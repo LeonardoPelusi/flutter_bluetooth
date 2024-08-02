@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/core/list_bluetooth_equipment_model_extension.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
@@ -105,16 +107,6 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       device: device,
     );
 
-    bool contains = false;
-
-    for (BluetoothEquipmentModel equipment in state.bluetoothEquipments) {
-      if (equipment.id == newId) {
-        contains = true;
-        return;
-      }
-      contains = false;
-    }
-
     final BluetoothConnectionType connectionType =
         _bluetoothEquipmentService.getBluetoothConnectionType(
       equipmentType,
@@ -127,14 +119,38 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       connectionType: connectionType,
     );
 
-    if (!contains) {
+    if (!state.bluetoothEquipments.hasEquipment(newEquipment)) {
       emit(state.copyWith(
         bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
       ));
     } else {
-      // TODO: Tratar métricas broadcast
-      if (state.connectedEquipments.contains(newEquipment) &&
-          newEquipment.connectionType == BluetoothConnectionType.broadcast) {}
+      if (state.connectedEquipments.hasEquipment(newEquipment) &&
+          newEquipment.connectionType == BluetoothConnectionType.broadcast) {
+        _listenToBroadcastMetrics(newEquipment);
+      }
+    }
+  }
+
+  void _listenToBroadcastMetrics(BluetoothEquipmentModel equipment) {
+    final Uint8List manufacturerData = equipment.equipment.manufacturerData;
+
+    switch (equipment.equipmentType) {
+      case BluetoothEquipmentType.bikeKeiser:
+        _bikeService.updateConnectedBike(equipment);
+        _bikeService.getBroadcastBikeKeiserData(manufacturerData);
+        break;
+      case BluetoothEquipmentType.bikeGoper:
+        _bikeService.updateConnectedBike(equipment);
+        _bikeService.getBroadcastBikeGoperData(manufacturerData);
+        break;
+      // case BluetoothEquipmentType.treadmill:
+      //   break;
+
+      case BluetoothEquipmentType.frequencyMeter:
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -145,9 +161,30 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   @override
   Future<void> connectDevice(BluetoothEquipmentModel equipment) async {
     switch (equipment.equipmentType) {
+      case BluetoothEquipmentType.bikeKeiser:
+        if (_bikeService.connectedBike != null) {
+          disconnectDevice(_bikeService.connectedBike!);
+        }
+        _bikeService.updateConnectedBike(equipment);
+        emit(state.copyWith(
+          connectedEquipments: [...state.connectedEquipments, equipment],
+        ));
+        break;
+
       case BluetoothEquipmentType.bikeGoper:
-        if (_bikeStream != null) disconnectDevice(equipment);
-        _bikeStream = _listenToDeviceState(equipment);
+        if (_bikeService.connectedBike != null) {
+          disconnectDevice(_bikeService.connectedBike!);
+        }
+
+        if (equipment.connectionType == BluetoothConnectionType.broadcast) {
+          _bikeService.updateConnectedBike(equipment);
+          emit(state.copyWith(
+            connectedEquipments: [...state.connectedEquipments, equipment],
+          ));
+        } else {
+          _bikeStream = _listenToDeviceState(equipment);
+        }
+
         break;
       case BluetoothEquipmentType.treadmill:
         // _listenToDeviceState(equipment, _treadmillStream);

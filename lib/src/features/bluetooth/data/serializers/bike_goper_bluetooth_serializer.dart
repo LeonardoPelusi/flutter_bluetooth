@@ -1,9 +1,5 @@
 part of 'bluetooth_serializer.dart';
 
-// !ATENÇÃO
-// -> NO FLUTTER BLUE PLUS, NO MANUFACTURER DATA NÃO VEM OS DOIS PRIMEIROS BYTES,
-//  PORTANTO IREMOS DESCONSIDERÁ-LOS NA HORA DA TRADUÇÃO.
-
 final bikeGoperBluetoothSerializer = BikeGoperBluetoothSerializer();
 
 class BikeGoperBluetoothSerializer
