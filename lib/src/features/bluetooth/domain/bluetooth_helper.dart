@@ -1,5 +1,5 @@
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 abstract class BluetoothHelper {
@@ -7,16 +7,16 @@ abstract class BluetoothHelper {
     DiscoveredDevice newDevice,
   ) {
     late BluetoothEquipmentType equipmentType;
-    if (BluetoothHelper.isBike(newDevice)) {
-      final bool isBikeKeiser = BluetoothHelper.isBikeKeiser(newDevice);
-      if (isBikeKeiser) {
+    if (isBike(newDevice)) {
+      final bool _isBikeKeiser = isBikeKeiser(newDevice);
+      if (_isBikeKeiser) {
         equipmentType = BluetoothEquipmentType.bikeKeiser;
       } else {
         equipmentType = BluetoothEquipmentType.bikeGoper;
       }
-    } else if (BluetoothHelper.isTreadmill(newDevice)) {
+    } else if (isTreadmill(newDevice)) {
       equipmentType = BluetoothEquipmentType.treadmill;
-    } else if (BluetoothHelper.isFrequencyMeter(newDevice)) {
+    } else if (isFrequencyMeter(newDevice)) {
       equipmentType = BluetoothEquipmentType.frequencyMeter;
     } else {
       equipmentType = BluetoothEquipmentType.undefined;

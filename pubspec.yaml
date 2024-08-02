@@ -13,6 +13,7 @@ dependencies:
   flutter_bloc: 8.0.0
   equatable: 2.0.5
   responsive_builder: 0.7.1
+  bloc: ^8.1.4
 
 dev_dependencies:
   flutter_test:

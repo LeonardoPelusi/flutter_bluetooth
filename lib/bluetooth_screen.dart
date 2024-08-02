@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/grid_view_widget.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 
@@ -121,6 +121,7 @@ class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
   Widget build(BuildContext context) {
     return BlocBuilder<BluetoothEquipmentsCubit, BluetoothEquipmentsState>(
         builder: (context, state) {
+
       final bool connected =
           state.connectedEquipments.contains(widget.bluetoothEquipment);
 

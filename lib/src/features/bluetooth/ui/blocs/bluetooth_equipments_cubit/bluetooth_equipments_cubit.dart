@@ -5,8 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_connect_ftms_enum.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
@@ -116,10 +115,16 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       contains = false;
     }
 
+    final BluetoothConnectionType connectionType =
+        _bluetoothEquipmentService.getBluetoothConnectionType(
+      equipmentType,
+    );
+
     final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
       id: newId,
       equipment: device,
       equipmentType: equipmentType,
+      connectionType: connectionType,
     );
 
     if (!contains) {
@@ -128,7 +133,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       ));
     } else {
       // TODO: Tratar métricas broadcast
-      if (state.connectedEquipments.contains(newEquipment)) {}
+      if (state.connectedEquipments.contains(newEquipment) &&
+          newEquipment.connectionType == BluetoothConnectionType.broadcast) {}
     }
   }
 
@@ -140,7 +146,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   Future<void> connectDevice(BluetoothEquipmentModel equipment) async {
     switch (equipment.equipmentType) {
       case BluetoothEquipmentType.bikeGoper:
-        _listenToDeviceState(equipment, _bikeStream);
+        if (_bikeStream != null) disconnectDevice(equipment);
+        _bikeStream = _listenToDeviceState(equipment);
         break;
       case BluetoothEquipmentType.treadmill:
         // _listenToDeviceState(equipment, _treadmillStream);
@@ -154,10 +161,11 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     }
   }
 
-  Future<void> _listenToDeviceState(
+  StreamSubscription<ConnectionStateUpdate> _listenToDeviceState(
     BluetoothEquipmentModel equipment,
-    StreamSubscription<ConnectionStateUpdate>? connectionStream,
-  ) async {
+  ) {
+    late StreamSubscription<ConnectionStateUpdate> connectionStream;
+
     connectionStream = _flutterReactiveBle
         .connectToDevice(
       id: equipment.equipment.id,
@@ -166,6 +174,9 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
         .listen((equipmentState) {
       switch (equipmentState.connectionState) {
         case DeviceConnectionState.connecting:
+          // emit(state.copyWith(
+          //   connectingEquipments: [...state.connectingEquipments, equipment],
+          // ));
           break;
         case DeviceConnectionState.connected:
           _listenToDeviceServices(equipment);
@@ -173,9 +184,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
             connectedEquipments: [...state.connectedEquipments, equipment],
           ));
           break;
-        case DeviceConnectionState.disconnecting:
-          break;
-        case DeviceConnectionState.disconnected:
+        case DeviceConnectionState.disconnecting ||
+              DeviceConnectionState.disconnected:
           disconnectDevice(equipment);
           break;
         default:
@@ -194,9 +204,11 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
         disconnectDevice(equipment);
       }
     }, onError: (e) async {
-      await connectionStream?.cancel();
+      await connectionStream.cancel();
       disconnectDevice(equipment);
     });
+
+    return connectionStream;
   }
 
   Future<void> _listenToDeviceServices(
