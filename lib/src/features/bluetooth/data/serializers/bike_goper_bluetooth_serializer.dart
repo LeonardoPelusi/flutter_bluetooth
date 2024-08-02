@@ -41,7 +41,6 @@ class BikeGoperBluetoothSerializer
     speed = _calculateSpeed(power);
 
     final result = BikeGoperBluetooth(
-      id: 0,
       cadence: cadence,
       power: power,
       resistance: resistance,
