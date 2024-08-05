@@ -87,6 +87,7 @@ class BluetoothBikeService {
 
   void cleanBikeData() {
     _bikeCharacteristicStream?.cancel();
+    _bikeCharacteristicStream = null;
     _connectedBike = null;
     _bleBikeMetricsNotifier.updateIsConnectedValue(false);
     _resetVariables();

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bluetooth_serializer.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_goper_bluetooth.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_goper_broadcast.dart';
@@ -20,6 +21,8 @@ part '../../../domain/bluetooth_guid.dart';
 class BluetoothEquipmentService {
   static final BluetoothEquipmentService instance = BluetoothEquipmentService();
 
+  final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
+
   static BluetoothGuid get guids => _BluetoothGuid();
 
   static bool isBroadcastConnection = false;
@@ -32,7 +35,7 @@ class BluetoothEquipmentService {
     if (manufacturerData.isEmpty) {
       newId = '';
     } else {
-      if (device.name.contains('M3')) {
+      if (BluetoothHelper.isBikeKeiser(device)) {
         // abaixo peguei o terceiro byte do manufacture data porque
         // nessa lista não são enviados os bytes 00 e 01 (CompanyId)
         newId = manufacturerData[3].toString();
@@ -41,6 +44,13 @@ class BluetoothEquipmentService {
       }
     }
     return newId;
+  }
+
+  Future<List<Service>> getServicesList(
+    BluetoothEquipmentModel equipment,
+  ) async {
+    return await _flutterReactiveBle
+        .getDiscoveredServices(equipment.equipment.id);
   }
 
   BluetoothConnectionType getBluetoothConnectionType(

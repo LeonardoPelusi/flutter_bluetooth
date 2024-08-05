@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/grid_view_widget.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_bike_cubit/bluetooth_bike_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
@@ -13,10 +14,15 @@ class BluetoothScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<BluetoothEquipmentsCubit>(
-          create: (context) => BluetoothEquipmentsCubitImpl(
+          create: (_) => BluetoothEquipmentsCubitImpl(
             BluetoothConnectFTMS.all,
           ),
         ),
+        BlocProvider<BluetoothBikeCubit>(
+          create: (context) => BluetoothBikeCubitImpl(
+            context.read<BluetoothEquipmentsCubit>(),
+          ),
+        )
       ],
       child: const _BluetoothScreen(),
     );
@@ -78,9 +84,14 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                         padding: EdgeInsets.symmetric(
                           vertical: MediaQuery.of(context).size.height * 0.005,
                         ),
-                        child: BluetoothItemWidget(
-                          bluetoothEquipment: bluetoothEquipment,
-                        ),
+                        child: bluetoothEquipment.equipmentType ==
+                                    BluetoothEquipmentType.bikeGoper ||
+                                bluetoothEquipment.equipmentType ==
+                                    BluetoothEquipmentType.bikeKeiser
+                            ? _BikeItem(bluetoothEquipment: bluetoothEquipment)
+                            : BluetoothItemWidget(
+                                bluetoothEquipment: bluetoothEquipment,
+                              ),
                       );
                     },
                   ),
@@ -97,64 +108,79 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
   }
 }
 
-class BluetoothItemWidget extends StatefulWidget {
+class _BikeItem extends StatelessWidget {
   final BluetoothEquipmentModel bluetoothEquipment;
-  const BluetoothItemWidget({
-    required this.bluetoothEquipment,
+  const _BikeItem({
     super.key,
+    required this.bluetoothEquipment,
   });
 
   @override
-  State<BluetoothItemWidget> createState() => _BluetoothItemWidgetState();
+  Widget build(BuildContext context) {
+    final BluetoothBikeCubit bluetoothBikeCubit =
+        context.read<BluetoothBikeCubit>();
+
+    return BlocConsumer<BluetoothBikeCubit, BluetoothBikeState>(
+      bloc: bluetoothBikeCubit,
+      listener: (context, state) {},
+      builder: (context, state) {
+        final bool connected = state is BluetoothBikeConnected;
+
+        return GestureDetector(
+          onTap: () => connected
+              ? bluetoothBikeCubit.disconnect()
+              : bluetoothBikeCubit.connect(bluetoothEquipment),
+          child: BluetoothItemWidget(
+            bluetoothEquipment: bluetoothEquipment,
+            isConnecting: state is BluetoothBikeConnecting,
+            connected: connected,
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _BluetoothItemWidgetState extends State<BluetoothItemWidget> {
-  late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
-
-  @override
-  void initState() {
-    super.initState();
-    _bluetoothEquipmentsCubit = context.read<BluetoothEquipmentsCubit>();
-  }
+class BluetoothItemWidget extends StatelessWidget {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  final bool isConnecting;
+  final bool connected;
+  const BluetoothItemWidget({
+    required this.bluetoothEquipment,
+    this.connected = false,
+    this.isConnecting = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BluetoothEquipmentsCubit, BluetoothEquipmentsState>(
         builder: (context, state) {
-
-      final bool connected =
-          state.connectedEquipments.contains(widget.bluetoothEquipment);
-
-      return GestureDetector(
-        onTap: () => connected
-            ? _bluetoothEquipmentsCubit
-                .disconnectDevice(widget.bluetoothEquipment)
-            : _bluetoothEquipmentsCubit
-                .connectDevice(widget.bluetoothEquipment),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: const BorderSide(
-              color: Colors.black,
-            ),
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: const BorderSide(
+            color: Colors.black,
           ),
-          elevation: 16,
-          shadowColor: Colors.black,
-          child: ListTile(
-            title: Text(
-                '${widget.bluetoothEquipment.id} - ${widget.bluetoothEquipment.equipment.name}'),
-            subtitle: Text(widget.bluetoothEquipment.equipmentType.name),
-            trailing: connected
-                ? const Icon(Icons.close)
-                : const Text(
-                    'Conectar',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.blue,
+        ),
+        elevation: 16,
+        shadowColor: Colors.black,
+        child: ListTile(
+          title: Text(
+              '${bluetoothEquipment.id} - ${bluetoothEquipment.equipment.name}'),
+          subtitle: Text(bluetoothEquipment.equipmentType.name),
+          trailing: isConnecting
+              ? const CircularProgressIndicator()
+              : connected
+                  ? const Icon(Icons.close)
+                  : const Text(
+                      'Conectar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.blue,
+                      ),
                     ),
-                  ),
-          ),
         ),
       );
     });

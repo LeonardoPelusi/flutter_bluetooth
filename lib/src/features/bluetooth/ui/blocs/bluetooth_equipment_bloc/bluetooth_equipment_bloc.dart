@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_bluetooth/extension.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments_services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_equipment_enum.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 
 part 'bluetooth_equipment_event.dart';
