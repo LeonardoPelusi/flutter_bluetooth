@@ -5,6 +5,7 @@ import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_bike_cubit/bluetooth_bike_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_frequency_meter_cubit/bluetooth_frequency_meter_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_treadmill_cubit/bluetooth_treadmill_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
@@ -26,6 +27,11 @@ class BluetoothScreen extends StatelessWidget {
         ),
         BlocProvider<BluetoothTreadmillCubit>(
           create: (context) => BluetoothTreadmillCubitImpl(
+            context.read<BluetoothEquipmentsCubit>(),
+          ),
+        ),
+        BlocProvider<BluetoothFrequencyMeterCubit>(
+          create: (context) => BluetoothFrequencyMeterCubitImpl(
             context.read<BluetoothEquipmentsCubit>(),
           ),
         )
@@ -99,7 +105,7 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                                     BluetoothEquipmentType.treadmill
                                 ? _TreadmillItem(
                                     bluetoothEquipment: bluetoothEquipment)
-                                : BluetoothItemWidget(
+                                : _FrequencyMeterItem(
                                     bluetoothEquipment: bluetoothEquipment,
                                   ),
                       );
@@ -179,6 +185,40 @@ class _TreadmillItem extends StatelessWidget {
           child: BluetoothItemWidget(
             bluetoothEquipment: bluetoothEquipment,
             isConnecting: state is BluetoothTreadmillConnecting &&
+                state.equipment == bluetoothEquipment,
+            connected: connected,
+          ),
+        );
+      },
+    );
+  }
+}
+class _FrequencyMeterItem extends StatelessWidget {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  const _FrequencyMeterItem({
+    super.key,
+    required this.bluetoothEquipment,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final BluetoothFrequencyMeterCubit bluetoothFrequencyMeterCubit =
+        context.read<BluetoothFrequencyMeterCubit>();
+
+    return BlocConsumer<BluetoothFrequencyMeterCubit, BluetoothFrequencyMeterState>(
+      bloc: bluetoothFrequencyMeterCubit,
+      listener: (context, state) {},
+      builder: (context, state) {
+        final bool connected = state is BluetoothFrequencyMeterConnected &&
+            state.equipment == bluetoothEquipment;
+
+        return GestureDetector(
+          onTap: () => connected
+              ? bluetoothFrequencyMeterCubit.disconnect()
+              : bluetoothFrequencyMeterCubit.connect(bluetoothEquipment),
+          child: BluetoothItemWidget(
+            bluetoothEquipment: bluetoothEquipment,
+            isConnecting: state is BluetoothFrequencyMeterConnecting &&
                 state.equipment == bluetoothEquipment,
             connected: connected,
           ),

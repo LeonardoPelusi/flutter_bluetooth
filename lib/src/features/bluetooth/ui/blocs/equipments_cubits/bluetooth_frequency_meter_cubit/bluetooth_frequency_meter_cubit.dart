@@ -64,7 +64,7 @@ class BluetoothFrequencyMeterCubitImpl extends BluetoothFrequencyMeterCubit {
   void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
     if (state is BluetoothFrequencyMeterConnected) {
       final state = this.state as BluetoothFrequencyMeterConnected;
-      if (state.equipment == equipment) _listenToBroadcastMetrics(equipment);
+      if (state.equipment.equipment.id == equipment.equipment.id) _listenToBroadcastMetrics(equipment);
     }
   }
 

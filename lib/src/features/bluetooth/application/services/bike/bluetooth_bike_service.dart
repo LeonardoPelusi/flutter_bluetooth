@@ -39,6 +39,8 @@ class BluetoothBikeService {
   }
 
   void getBroadcastBikeKeiserData(Uint8List manufacturerData) {
+    _bleBikeMetricsNotifier.updateIsConnectedValue(true);
+
     final BikeKeiserBroadcast bikeKeiserBroadcast =
         bikeKeiserBroadcastSerializer.from(manufacturerData);
 
@@ -52,6 +54,8 @@ class BluetoothBikeService {
   }
 
   void getBroadcastBikeGoperData(Uint8List manufacturerData) {
+    _bleBikeMetricsNotifier.updateIsConnectedValue(true);
+
     final BikeGoperBroadcast bikeGoperBroadcast =
         bikeGoperBroadcastSerializer.from(manufacturerData);
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -21,19 +20,11 @@ abstract class BluetoothEquipmentsCubit
     Duration resetTime,
   });
 
-  Future<void> connectDevice(
-    BluetoothEquipmentModel equipment,
-  );
-
-  Future<void> disconnectDevice(
+  Stream<ConnectionStateUpdate> connectToEquipment(
     BluetoothEquipmentModel equipment,
   );
 
   Stream<BluetoothEquipmentModel> get equipmentsStream;
-
-  Stream<ConnectionStateUpdate> connectToEquipment(
-    BluetoothEquipmentModel equipment,
-  );
 }
 
 class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
@@ -61,25 +52,14 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   // Services
   final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
 
-  // Bluetooth Services
-  final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
-  // final BluetoothTreadmillService _treadmillService =
-  // BluetoothTreadmillService.instance;
-  // final BluetoothFrequencyMeterService _frequencyMeterService =
-  //     BluetoothFrequencyMeterService.instance;
-
   // Control Variables (Streams)
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
-  StreamSubscription<ConnectionStateUpdate>? _bikeStream;
-  // StreamController<ConnectionStateUpdate>? _treadmillStream;
-  // StreamController<ConnectionStateUpdate>? _frequencyMeterStream;
+  final StreamController<BluetoothEquipmentModel> _broadcastController =
+      StreamController<BluetoothEquipmentModel>.broadcast();
 
   // Control Variables (Timers)
   Timer? _resetTimer;
   final Duration _connectionTimeoutDuration = const Duration(seconds: 10);
-
-  final StreamController<BluetoothEquipmentModel> _broadcastController =
-      StreamController<BluetoothEquipmentModel>.broadcast();
 
   // ======================== Scan Methods ========================
 
@@ -109,6 +89,22 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
 
     if (equipmentType == BluetoothEquipmentType.undefined) return;
 
+    switch (_bluetoothConnectFTMS) {
+      case BluetoothConnectFTMS.all:
+        break;
+      case BluetoothConnectFTMS.bikeAndMybeat:
+        if (equipmentType == BluetoothEquipmentType.treadmill) return;
+        break;
+      case BluetoothConnectFTMS.treadmillAndMybeat:
+        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equipmentType == BluetoothEquipmentType.bikeKeiser) return;
+      case BluetoothConnectFTMS.onlyMyBeat:
+        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equipmentType == BluetoothEquipmentType.bikeKeiser ||
+            equipmentType == BluetoothEquipmentType.treadmill) return;
+        break;
+    }
+
     final String newId = BluetoothEquipmentService.getEquipmentId(
       manufacturerData: device.manufacturerData,
       device: device,
@@ -132,180 +128,12 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       ));
     } else {
       _broadcastController.add(newEquipment);
-
-      // if (state.connectedEquipments.hasEquipment(newEquipment) &&
-      //     newEquipment.connectionType == BluetoothConnectionType.broadcast) {
-      //   _listenToBroadcastMetrics(newEquipment);
-      // }
     }
   }
 
   // ====================== End Start Scan ======================
 
   // ====================== Connect Methods ======================
-
-  @override
-  Future<void> connectDevice(BluetoothEquipmentModel equipment) async {
-    switch (equipment.equipmentType) {
-      case BluetoothEquipmentType.bikeKeiser:
-        //   if (_bikeService.connectedBike != null) {
-        //     disconnectDevice(_bikeService.connectedBike!);
-        //   }
-        //   _bikeService.updateConnectedBike(equipment);
-        //   emit(state.copyWith(
-        //     connectedEquipments: [...state.connectedEquipments, equipment],
-        //   ));
-        //   break;
-
-        // case BluetoothEquipmentType.bikeGoper:
-        //   if (_bikeService.connectedBike != null) {
-        //     disconnectDevice(_bikeService.connectedBike!);
-        //   }
-
-        //   if (equipment.connectionType == BluetoothConnectionType.broadcast) {
-        //     _bikeService.updateConnectedBike(equipment);
-        //     emit(state.copyWith(
-        //       connectedEquipments: [...state.connectedEquipments, equipment],
-        //     ));
-        //   } else {
-        //     _bikeStream = _listenToDeviceState(equipment);
-        //   }
-
-        break;
-      case BluetoothEquipmentType.treadmill:
-        // _listenToDeviceState(equipment, _treadmillStream);
-
-        break;
-      case BluetoothEquipmentType.frequencyMeter:
-        // _listenToDeviceState(equipment, _frequencyMeterStream);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  StreamSubscription<ConnectionStateUpdate> _listenToDeviceState(
-    BluetoothEquipmentModel equipment,
-  ) {
-    late StreamSubscription<ConnectionStateUpdate> connectionStream;
-
-    connectionStream = _flutterReactiveBle
-        .connectToDevice(
-      id: equipment.equipment.id,
-      connectionTimeout: _connectionTimeoutDuration,
-    )
-        .listen((equipmentState) {
-      switch (equipmentState.connectionState) {
-        case DeviceConnectionState.connecting:
-          // emit(state.copyWith(
-          //   connectingEquipments: [...state.connectingEquipments, equipment],
-          // ));
-          break;
-        case DeviceConnectionState.connected:
-          _listenToDeviceServices(equipment);
-          emit(state.copyWith(
-            connectedEquipments: [...state.connectedEquipments, equipment],
-          ));
-          break;
-        case DeviceConnectionState.disconnecting ||
-              DeviceConnectionState.disconnected:
-          disconnectDevice(equipment);
-          break;
-        default:
-          break;
-      }
-
-      if (equipmentState.failure != null) {
-        switch (equipmentState.failure?.code) {
-          case ConnectionError.failedToConnect:
-            break;
-          case ConnectionError.unknown:
-            break;
-          default:
-            break;
-        }
-        disconnectDevice(equipment);
-      }
-    }, onError: (e) async {
-      await connectionStream.cancel();
-      disconnectDevice(equipment);
-    });
-
-    return connectionStream;
-  }
-
-  Future<void> _listenToDeviceServices(
-      BluetoothEquipmentModel equipment) async {
-    List<Service> services =
-        await _flutterReactiveBle.getDiscoveredServices(equipment.equipment.id);
-
-    switch (equipment.equipmentType) {
-      case BluetoothEquipmentType.bikeGoper:
-        // _trainingFlowData.postBikeGraph = true;
-        // await _bluetoothSharedPreferencesService.bluetoothCryptoBikeGoper(
-        //   bikeId: bluetoothEquipment.equipment.id.id,
-        // );
-        // _bikeService.updateConnectedBike(equipment);
-        await _bikeService.getIndoorBikeData(services);
-        break;
-      case BluetoothEquipmentType.treadmill:
-        // _trainingFlowData.postTreadmillGraph = true;
-
-        // await _bluetoothSharedPreferencesService
-        //     .bluetoothCryptoTreadmillBLE(
-        //   treadmillId: bluetoothEquipment.equipment.id.id,
-        // );
-        // _treadmillService.updateConnectedTreadmill(equipment);
-        // await _treadmillService.getTreadmillData(services);
-        break;
-      case BluetoothEquipmentType.frequencyMeter:
-        // _trainingFlowData.postBpmGraph = true;
-
-        // int userAge = _trainingFlowData.userAge!;
-        // double userWeight = _trainingFlowData.userWeight!;
-        // await _bleFrequencyMeterService.getUserData(
-        //   services,
-        //   userAge,
-        //   userWeight,
-        // );
-
-        // _frequencyMeterService
-        //     .updateConnectedFrequencyMeter(equipment);
-        // await _frequencyMeterService.getFrequencyMeterMeasurement(services);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  @override
-  Future<void> disconnectDevice(BluetoothEquipmentModel equipment) async {
-    switch (equipment.equipmentType) {
-      case BluetoothEquipmentType.bikeKeiser ||
-            BluetoothEquipmentType.bikeGoper:
-        _bikeService.cleanBikeData();
-        _bikeStream?.cancel();
-        _bikeStream = null;
-        break;
-      case BluetoothEquipmentType.treadmill:
-        // _treadmillService.cleanTreadmillData();
-        break;
-      case BluetoothEquipmentType.frequencyMeter:
-        // _frequencyMeterService.clearUserData();
-        // _frequencyMeterService.cleanFequencyMeterData();
-        break;
-      default:
-        break;
-    }
-
-    emit(state.copyWith(
-      connectedEquipments: state.connectedEquipments
-          .where((element) => element.id != equipment.id)
-          .toList(),
-    ));
-  }
 
   @override
   Stream<ConnectionStateUpdate> connectToEquipment(
@@ -333,9 +161,12 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     Bluetooth.treadmillConnected.value = TreadmillBleController(
         deviceConnected: false, openBox: true, openFooter: true);
 
-    await _scanSubscription?.cancel();
-    _resetTimer?.cancel();
     _flutterReactiveBle.deinitialize();
+    await _scanSubscription?.cancel();
+    _scanSubscription = null;
+    await _broadcastController.close();
+    _resetTimer?.cancel();
+    _resetTimer = null;
     super.close();
   }
 

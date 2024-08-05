@@ -61,7 +61,9 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
     if (state is BluetoothBikeConnected) {
       final state = this.state as BluetoothBikeConnected;
-      if (state.equipment == equipment) _listenToBroadcastMetrics(equipment);
+      if (state.equipment.equipment.id == equipment.equipment.id) {
+        _listenToBroadcastMetrics(equipment);
+      }
     }
   }
 
