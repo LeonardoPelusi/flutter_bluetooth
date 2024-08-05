@@ -30,7 +30,8 @@ class BleBikeMetricsNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearMetrics() {
+  void clearData() {
+    isConnected.value = false;
     cadence.value = 0;
     power.value = -1;
     resistance.value = 0;

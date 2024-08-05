@@ -7,11 +7,11 @@ class BluetoothBikeService {
       BleBikeMetricsNotifier.instance;
 
   // Variáveis para a geração de graficos
-  int powerBest = 0;
-  int cadenceMedia = 0;
-  int cadenceBest = 0;
-  int cumulativeCadence = 0;
-  int cadenceLength = 0;
+  // int powerBest = 0;
+  // int cadenceMedia = 0;
+  // int cadenceBest = 0;
+  // int cumulativeCadence = 0;
+  // int cadenceLength = 0;
 
   // Serviços
   late Service _fitnessMachineService;
@@ -20,18 +20,9 @@ class BluetoothBikeService {
   // Stream
   StreamSubscription<List<int>>? _bikeCharacteristicStream;
 
-  // Equipamento Conectado Atualmente
-  static BluetoothEquipmentModel? _connectedBike;
-  BluetoothEquipmentModel? get connectedBike => _connectedBike;
-
-  void updateConnectedBike(BluetoothEquipmentModel bike) {
-    _connectedBike = bike;
-    _bleBikeMetricsNotifier.updateIsConnectedValue(true);
-  }
-
   //seleciona fitness service para capturar os valores de cadencia e potencia
   Future<void> getIndoorBikeData(List<Service> services) async {
-    _resetVariables();
+    cleanBikeData();
     _fitnessMachineService = services.firstWhere((service) =>
         service.id == BluetoothEquipmentService.guids.fitnessMachineService);
 
@@ -81,15 +72,9 @@ class BluetoothBikeService {
     );
   }
 
-  void _resetVariables() {
-    _bleBikeMetricsNotifier.clearMetrics();
-  }
-
   void cleanBikeData() {
+    _bleBikeMetricsNotifier.clearData();
     _bikeCharacteristicStream?.cancel();
     _bikeCharacteristicStream = null;
-    _connectedBike = null;
-    _bleBikeMetricsNotifier.updateIsConnectedValue(false);
-    _resetVariables();
   }
 }

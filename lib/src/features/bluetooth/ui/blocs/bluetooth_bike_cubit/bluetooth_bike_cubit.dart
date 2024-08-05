@@ -43,7 +43,6 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
     _bikeStream?.cancel();
 
     if (equipment.connectionType == BluetoothConnectionType.broadcast) {
-      _bikeService.updateConnectedBike(equipment);
       _bikeBroadcastStream = _bluetoothEquipmentsCubit.equipmentsStream
           .listen(_onEquipmentDiscovered);
       emit(BluetoothBikeConnected(
@@ -129,7 +128,6 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   void _listenToDeviceServices(BluetoothEquipmentModel equipment) async {
     final List<Service> services =
         await _equipmentService.getServicesList(equipment);
-    _bikeService.updateConnectedBike(equipment);
     await _bikeService.getIndoorBikeData(services);
   }
 
