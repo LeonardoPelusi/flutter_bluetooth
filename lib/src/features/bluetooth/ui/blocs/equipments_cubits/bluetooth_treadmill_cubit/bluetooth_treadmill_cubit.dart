@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 part 'bluetooth_treadmill_state.dart';
@@ -79,13 +79,13 @@ class BluetoothTreadmillCubitImpl extends BluetoothTreadmillCubit {
       switch (equipmentState.failure?.code) {
         case ConnectionError.failedToConnect:
           emit(const BluetoothTreadmillError(
-            message: 'Falha ao se conectar com o equipamento',
+            message: 'Falha ao se conectar com a esteira',
           ));
 
           break;
         case ConnectionError.unknown:
           emit(const BluetoothTreadmillError(
-            message: 'Erro ao se conectar com o equipamento',
+            message: 'Erro ao se conectar com a esteira',
           ));
           break;
         default:

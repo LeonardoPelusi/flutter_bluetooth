@@ -13,9 +13,6 @@ class BluetoothBikeService {
   // int cumulativeCadence = 0;
   // int cadenceLength = 0;
 
-  // Serviços
-  late Characteristic _bikeIndoorData;
-
   // Stream
   StreamSubscription<List<int>>? _bikeCharacteristicStream;
 
@@ -25,9 +22,10 @@ class BluetoothBikeService {
 
     _bleBikeMetricsNotifier.updateIsConnectedValue(true);
 
-    _bikeIndoorData = BluetoothEquipmentService.getBikeIndoorData(services);
+    final Characteristic bikeIndoorData =
+        BluetoothEquipmentService.getBikeIndoorData(services);
 
-    _bikeCharacteristicStream = _bikeIndoorData.subscribe().listen((value) {
+    _bikeCharacteristicStream = bikeIndoorData.subscribe().listen((value) {
       final BikeGoperBluetooth bikeGoperBluetooth =
           bikeGoperBluetoothSerializer.from(value);
 
@@ -38,8 +36,6 @@ class BluetoothBikeService {
         newSpeed: bikeGoperBluetooth.speed,
       );
     });
-    Future.delayed(const Duration(milliseconds: 1500));
-    // await _bikeIndoorData.setNotifyValue(true);
   }
 
   void getBroadcastBikeKeiserData(Uint8List manufacturerData) {

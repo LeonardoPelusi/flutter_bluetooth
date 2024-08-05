@@ -9,13 +9,14 @@ import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_keiser_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/frequency_meter/frequency_meter_bluetooth.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/treadmill/treadmill_bluetooth.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 part 'bike/bluetooth_bike_service.dart';
 part 'treadmill/bluetooth_treadmill_service.dart';
-part 'frequency_meter/bluetooth_frequence_meter_service.dart';
+part 'frequency_meter/bluetooth_frequency_meter_service.dart';
 
 part '../../domain/bluetooth_guid.dart';
 
@@ -72,6 +73,18 @@ abstract class BluetoothEquipmentService {
         .firstWhere((service) => service.id == guids.fitnessMachineService);
   }
 
+  static Service _getUserDataService(List<Service> services) {
+    return services
+        .firstWhere((service) => service.id == guids.userDataService);
+  }
+
+  static Service _getFrequencyMeterService(List<Service> services) {
+    return services.firstWhere(
+      (service) =>
+          service.id == BluetoothEquipmentService.guids.frequencyMeterService,
+    );
+  }
+
   static Characteristic getBikeIndoorData(List<Service> services) {
     final fitnessMachineService = _getFitnessMachineService(services);
     return fitnessMachineService.characteristics.firstWhere(
@@ -86,6 +99,30 @@ abstract class BluetoothEquipmentService {
       (characteristic) =>
           characteristic.id ==
           BluetoothEquipmentService.guids.treadmillFitnessData,
+    );
+  }
+
+  static Characteristic getUserAge(List<Service> services) {
+    final userDataService = _getUserDataService(services);
+    return userDataService.characteristics.firstWhere(
+      (characteristic) =>
+          characteristic.id == BluetoothEquipmentService.guids.userAge,
+    );
+  }
+
+  static Characteristic getUserWeight(List<Service> services) {
+    final userDataService = _getUserDataService(services);
+    return userDataService.characteristics.firstWhere(
+      (characteristic) =>
+          characteristic.id == BluetoothEquipmentService.guids.userWeight,
+    );
+  }
+
+  static Characteristic getFrequencyMeterData(List<Service> services) {
+    final userDataService = _getUserDataService(services);
+    return userDataService.characteristics.firstWhere(
+      (characteristic) =>
+          characteristic.id == BluetoothEquipmentService.guids.userWeight,
     );
   }
 }

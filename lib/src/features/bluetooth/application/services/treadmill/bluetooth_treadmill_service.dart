@@ -10,9 +10,6 @@ class BluetoothTreadmillService {
   // int powerBest = 0;
   // double speedBest = 0;
 
-  // Serviços
-  late Characteristic _treadmillFitnessData;
-
   // Stream
   StreamSubscription<List<int>>? _treadmillCharacteristicStream;
 
@@ -22,11 +19,11 @@ class BluetoothTreadmillService {
 
     _bleTreadmillMetricsNotifier.updateIsConnectedValue(true);
 
-    _treadmillFitnessData =
+    final Characteristic treadmillFitnessData =
         BluetoothEquipmentService.getTreadmillFitnessData(services);
 
     _treadmillCharacteristicStream =
-        _treadmillFitnessData.subscribe().listen((value) {
+        treadmillFitnessData.subscribe().listen((value) {
       final TreadmillBluetooth treadmillBluetooth =
           treadmillBluetoothSerializer.from(value);
 
@@ -36,8 +33,6 @@ class BluetoothTreadmillService {
         newPower: treadmillBluetooth.power,
       );
     });
-    Future.delayed(const Duration(milliseconds: 1500));
-    // await _treadmillFitnessData.setNotifyValue(true);
   }
 
   void cleanTreadmillData() {

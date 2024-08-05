@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth/grid_view_widget.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_bike_cubit/bluetooth_bike_cubit.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_treadmill_cubit/bluetooth_treadmill_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_bike_cubit/bluetooth_bike_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_treadmill_cubit/bluetooth_treadmill_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
   const BluetoothScreen({super.key});

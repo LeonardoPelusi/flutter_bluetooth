@@ -6,7 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 part 'bluetooth_bike_state.dart';
@@ -43,11 +43,11 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
     _bikeStream?.cancel();
 
     if (equipment.connectionType == BluetoothConnectionType.broadcast) {
-      _bikeBroadcastStream = _bluetoothEquipmentsCubit.equipmentsStream
-          .listen(_onEquipmentDiscovered);
       emit(BluetoothBikeConnected(
         equipment: equipment,
       ));
+      _bikeBroadcastStream = _bluetoothEquipmentsCubit.equipmentsStream
+          .listen(_onEquipmentDiscovered);
     } else {
       _bikeStream = _bluetoothEquipmentsCubit
           .connectToEquipment(equipment)
@@ -59,7 +59,10 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   // =============== BROADCAST ===============
 
   void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
-    _listenToBroadcastMetrics(equipment);
+    if (state is BluetoothBikeConnected) {
+      final state = this.state as BluetoothBikeConnected;
+      if (state.equipment == equipment) _listenToBroadcastMetrics(equipment);
+    }
   }
 
   void _listenToBroadcastMetrics(BluetoothEquipmentModel equipment) {
@@ -111,13 +114,13 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
       switch (equipmentState.failure?.code) {
         case ConnectionError.failedToConnect:
           emit(const BluetoothBikeError(
-            message: 'Falha ao se conectar com o equipamento',
+            message: 'Falha ao se conectar com a bike',
           ));
 
           break;
         case ConnectionError.unknown:
           emit(const BluetoothBikeError(
-            message: 'Erro ao se conectar com o equipamento',
+            message: 'Erro ao se conectar com a bike',
           ));
           break;
         default:
