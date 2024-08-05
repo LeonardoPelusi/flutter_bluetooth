@@ -1,4 +1,4 @@
-part of '../../bluetooth_serializer.dart';
+part of '../bluetooth_serializer.dart';
 
 // !DOCUMENTATION:
 // -> BIKE KEISER: https://dev.keiser.com/mseries/direct/
