@@ -21,5 +21,5 @@ const initialBikeGoperBluetooth = BikeGoperBluetooth(
   cadence: 0,
   power: 0,
   resistance: 0,
-  speed: 0,
+  speed: 0.0,
 );

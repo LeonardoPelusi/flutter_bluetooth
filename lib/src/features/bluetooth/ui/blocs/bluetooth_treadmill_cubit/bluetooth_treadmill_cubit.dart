@@ -1,25 +1,23 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
-part 'bluetooth_bike_state.dart';
+part 'bluetooth_treadmill_state.dart';
 
-abstract class BluetoothBikeCubit extends Cubit<BluetoothBikeState> {
-  BluetoothBikeCubit() : super(BluetoothBikeInitial());
+abstract class BluetoothTreadmillCubit extends Cubit<BluetoothTreadmillState> {
+  BluetoothTreadmillCubit() : super(BluetoothTreadmillInitial());
 
   void connect(BluetoothEquipmentModel equipment);
   void disconnect();
 }
 
-class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
-  BluetoothBikeCubitImpl(
+class BluetoothTreadmillCubitImpl extends BluetoothTreadmillCubit {
+  BluetoothTreadmillCubitImpl(
     this._bluetoothEquipmentsCubit,
   );
 
@@ -27,57 +25,27 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
   // Services
-  final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
+  final BluetoothTreadmillService _treadmillService =
+      BluetoothTreadmillService.instance;
 
   // Streams
-  StreamSubscription<BluetoothEquipmentModel>? _bikeBroadcastStream;
-  StreamSubscription<ConnectionStateUpdate>? _bikeStream;
+  StreamSubscription<BluetoothEquipmentModel>? _treadmillBroadcastStream;
+  StreamSubscription<ConnectionStateUpdate>? _treadmillStream;
 
   @override
   void connect(BluetoothEquipmentModel equipment) async {
-    emit(BluetoothBikeConnecting(
+    emit(BluetoothTreadmillConnecting(
       equipment: equipment,
     ));
 
-    _bikeBroadcastStream?.cancel();
-    _bikeStream?.cancel();
+    _treadmillBroadcastStream?.cancel();
+    _treadmillStream?.cancel();
 
-    if (equipment.connectionType == BluetoothConnectionType.broadcast) {
-      _bikeBroadcastStream = _bluetoothEquipmentsCubit.equipmentsStream
-          .listen(_onEquipmentDiscovered);
-      emit(BluetoothBikeConnected(
-        equipment: equipment,
-      ));
-    } else {
-      _bikeStream = _bluetoothEquipmentsCubit
-          .connectToEquipment(equipment)
-          .listen(
-              (state) => _listenToEquipmentState(state, equipment: equipment));
-    }
+    _treadmillStream = _bluetoothEquipmentsCubit
+        .connectToEquipment(equipment)
+        .listen(
+            (state) => _listenToEquipmentState(state, equipment: equipment));
   }
-
-  // =============== BROADCAST ===============
-
-  void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
-    _listenToBroadcastMetrics(equipment);
-  }
-
-  void _listenToBroadcastMetrics(BluetoothEquipmentModel equipment) {
-    final Uint8List manufacturerData = equipment.equipment.manufacturerData;
-
-    switch (equipment.equipmentType) {
-      case BluetoothEquipmentType.bikeKeiser:
-        _bikeService.getBroadcastBikeKeiserData(manufacturerData);
-        break;
-      case BluetoothEquipmentType.bikeGoper:
-        _bikeService.getBroadcastBikeGoperData(manufacturerData);
-        break;
-      default:
-        break;
-    }
-  }
-
-  // =========== END BROADCAST ==============
 
   // =========== DIRECT CONNECT =============
 
@@ -87,14 +55,14 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   }) {
     switch (equipmentState.connectionState) {
       case DeviceConnectionState.connecting:
-        emit(BluetoothBikeConnecting(
+        emit(BluetoothTreadmillConnecting(
           equipment: equipment,
         ));
         break;
       case DeviceConnectionState.connected:
         _listenToDeviceServices(equipment);
 
-        emit(BluetoothBikeConnected(
+        emit(BluetoothTreadmillConnected(
           equipment: equipment,
         ));
 
@@ -110,13 +78,13 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
     if (equipmentState.failure != null) {
       switch (equipmentState.failure?.code) {
         case ConnectionError.failedToConnect:
-          emit(const BluetoothBikeError(
+          emit(const BluetoothTreadmillError(
             message: 'Falha ao se conectar com o equipamento',
           ));
 
           break;
         case ConnectionError.unknown:
-          emit(const BluetoothBikeError(
+          emit(const BluetoothTreadmillError(
             message: 'Erro ao se conectar com o equipamento',
           ));
           break;
@@ -130,7 +98,7 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   void _listenToDeviceServices(BluetoothEquipmentModel equipment) async {
     final List<Service> services =
         await BluetoothEquipmentService.getServicesList(equipment);
-    await _bikeService.getIndoorBikeData(services);
+    await _treadmillService.getTreadmillData(services);
   }
 
   // ========== END DIRECT CONNECT ==========
@@ -138,15 +106,15 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   @override
   void disconnect() {
     _clearData();
-    emit(BluetoothBikeInitial());
+    emit(BluetoothTreadmillInitial());
   }
 
   void _clearData() {
-    _bikeService.cleanBikeData();
-    _bikeBroadcastStream?.cancel();
-    _bikeBroadcastStream = null;
-    _bikeStream?.cancel();
-    _bikeStream = null;
+    _treadmillService.cleanTreadmillData();
+    _treadmillBroadcastStream?.cancel();
+    _treadmillBroadcastStream = null;
+    _treadmillStream?.cancel();
+    _treadmillStream = null;
   }
 
   @override

@@ -5,24 +5,25 @@ import 'dart:typed_data';
 import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bluetooth_serializer.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_goper_bluetooth.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_goper_broadcast.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike_keiser_broadcast.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_bluetooth.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_broadcast.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_keiser_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/treadmill/treadmill_bluetooth.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
-part 'bluetooth_bike_service.dart';
-part 'bluetooth_treadmill_service.dart';
-part 'bluetooth_frequence_meter_service.dart';
+part 'bike/bluetooth_bike_service.dart';
+part 'treadmill/bluetooth_treadmill_service.dart';
+part 'frequency_meter/bluetooth_frequence_meter_service.dart';
 
-part '../../../domain/bluetooth_guid.dart';
+part '../../domain/bluetooth_guid.dart';
 
 abstract class BluetoothEquipmentService {
   static bool isBroadcastConnection = false;
-  static BluetoothGuid get guids => _BluetoothGuid();
 
   static final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
+  static BluetoothGuid get guids => _BluetoothGuid();
 
   static String getEquipmentId({
     required Uint8List manufacturerData,
@@ -66,8 +67,25 @@ abstract class BluetoothEquipmentService {
     }
   }
 
-  static Service getFitnessMachineService(List<Service> services) {
+  static Service _getFitnessMachineService(List<Service> services) {
     return services
         .firstWhere((service) => service.id == guids.fitnessMachineService);
+  }
+
+  static Characteristic getBikeIndoorData(List<Service> services) {
+    final fitnessMachineService = _getFitnessMachineService(services);
+    return fitnessMachineService.characteristics.firstWhere(
+      (characteristic) =>
+          characteristic.id == BluetoothEquipmentService.guids.bikeIndoorData,
+    );
+  }
+
+  static Characteristic getTreadmillFitnessData(List<Service> services) {
+    final fitnessMachineService = _getFitnessMachineService(services);
+    return fitnessMachineService.characteristics.firstWhere(
+      (characteristic) =>
+          characteristic.id ==
+          BluetoothEquipmentService.guids.treadmillFitnessData,
+    );
   }
 }

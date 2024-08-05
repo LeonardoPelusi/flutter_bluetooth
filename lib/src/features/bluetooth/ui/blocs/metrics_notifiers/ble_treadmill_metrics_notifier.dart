@@ -7,9 +7,9 @@ class BleTreadmillMetricsNotifier extends ChangeNotifier {
   static ValueNotifier<bool> isConnected = ValueNotifier<bool>(false);
 
   //Métricas que serão exibidas
-  static ValueNotifier<int> instaPower = ValueNotifier<int>(-1);
   static ValueNotifier<double> speed = ValueNotifier<double>(0);
   static ValueNotifier<double> inclination = ValueNotifier<double>(0);
+  static ValueNotifier<int> power = ValueNotifier<int>(-1);
 
   void updateIsConnectedValue(bool newValue) {
     isConnected.value = newValue;
@@ -17,20 +17,21 @@ class BleTreadmillMetricsNotifier extends ChangeNotifier {
   }
 
   void updateMetrics({
-    required int newInstaPower,
     required double newSpeed,
     required double newInclination,
+    required int newPower,
   }) {
-    instaPower.value = newInstaPower;
     speed.value = newSpeed;
     inclination.value = newInclination;
+    power.value = newPower;
     notifyListeners();
   }
 
-  void clearMetrics() {
-    instaPower.value = -1;
+  void clearData() {
+    isConnected.value = false;
     speed.value = 0;
     inclination.value = 0;
+    power.value = -1;
     notifyListeners();
   }
 }

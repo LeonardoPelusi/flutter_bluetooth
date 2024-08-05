@@ -142,7 +142,7 @@ class _TreadmillItemWidget extends StatelessWidget {
           builder: (context, value, child) => Text('Inclinação: $value'),
         ),
         ValueListenableBuilder(
-          valueListenable: BleTreadmillMetricsNotifier.instaPower,
+          valueListenable: BleTreadmillMetricsNotifier.power,
           builder: (context, value, child) => Text('Potência: $value'),
         ),
         ValueListenableBuilder(

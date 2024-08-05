@@ -9,7 +9,10 @@ sealed class BluetoothBikeState extends Equatable {
 
 final class BluetoothBikeInitial extends BluetoothBikeState {}
 
-final class BluetoothBikeConnecting extends BluetoothBikeState {}
+final class BluetoothBikeConnecting extends BluetoothBikeState {
+  final BluetoothEquipmentModel equipment;
+  const BluetoothBikeConnecting({required this.equipment});
+}
 
 final class BluetoothBikeConnected extends BluetoothBikeState {
   final BluetoothEquipmentModel equipment;

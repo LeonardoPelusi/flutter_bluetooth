@@ -5,6 +5,7 @@ import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_bike_cubit/bluetooth_bike_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/bluetooth_treadmill_cubit/bluetooth_treadmill_cubit.dart';
 
 class BluetoothScreen extends StatelessWidget {
   const BluetoothScreen({super.key});
@@ -20,6 +21,11 @@ class BluetoothScreen extends StatelessWidget {
         ),
         BlocProvider<BluetoothBikeCubit>(
           create: (context) => BluetoothBikeCubitImpl(
+            context.read<BluetoothEquipmentsCubit>(),
+          ),
+        ),
+        BlocProvider<BluetoothTreadmillCubit>(
+          create: (context) => BluetoothTreadmillCubitImpl(
             context.read<BluetoothEquipmentsCubit>(),
           ),
         )
@@ -89,9 +95,13 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
                                 bluetoothEquipment.equipmentType ==
                                     BluetoothEquipmentType.bikeKeiser
                             ? _BikeItem(bluetoothEquipment: bluetoothEquipment)
-                            : BluetoothItemWidget(
-                                bluetoothEquipment: bluetoothEquipment,
-                              ),
+                            : bluetoothEquipment.equipmentType ==
+                                    BluetoothEquipmentType.treadmill
+                                ? _TreadmillItem(
+                                    bluetoothEquipment: bluetoothEquipment)
+                                : BluetoothItemWidget(
+                                    bluetoothEquipment: bluetoothEquipment,
+                                  ),
                       );
                     },
                   ),
@@ -124,7 +134,8 @@ class _BikeItem extends StatelessWidget {
       bloc: bluetoothBikeCubit,
       listener: (context, state) {},
       builder: (context, state) {
-        final bool connected = state is BluetoothBikeConnected;
+        final bool connected = state is BluetoothBikeConnected &&
+            state.equipment == bluetoothEquipment;
 
         return GestureDetector(
           onTap: () => connected
@@ -132,7 +143,43 @@ class _BikeItem extends StatelessWidget {
               : bluetoothBikeCubit.connect(bluetoothEquipment),
           child: BluetoothItemWidget(
             bluetoothEquipment: bluetoothEquipment,
-            isConnecting: state is BluetoothBikeConnecting,
+            isConnecting: state is BluetoothBikeConnecting &&
+                state.equipment == bluetoothEquipment,
+            connected: connected,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TreadmillItem extends StatelessWidget {
+  final BluetoothEquipmentModel bluetoothEquipment;
+  const _TreadmillItem({
+    super.key,
+    required this.bluetoothEquipment,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final BluetoothTreadmillCubit bluetoothTreadmillCubit =
+        context.read<BluetoothTreadmillCubit>();
+
+    return BlocConsumer<BluetoothTreadmillCubit, BluetoothTreadmillState>(
+      bloc: bluetoothTreadmillCubit,
+      listener: (context, state) {},
+      builder: (context, state) {
+        final bool connected = state is BluetoothTreadmillConnected &&
+            state.equipment == bluetoothEquipment;
+
+        return GestureDetector(
+          onTap: () => connected
+              ? bluetoothTreadmillCubit.disconnect()
+              : bluetoothTreadmillCubit.connect(bluetoothEquipment),
+          child: BluetoothItemWidget(
+            bluetoothEquipment: bluetoothEquipment,
+            isConnecting: state is BluetoothTreadmillConnecting &&
+                state.equipment == bluetoothEquipment,
             connected: connected,
           ),
         );

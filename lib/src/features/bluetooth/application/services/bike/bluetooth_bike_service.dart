@@ -1,4 +1,4 @@
-part of 'bluetooth_equipment_service.dart';
+part of '../bluetooth_equipment_service.dart';
 
 class BluetoothBikeService {
   static BluetoothBikeService get instance => BluetoothBikeService();
@@ -14,7 +14,6 @@ class BluetoothBikeService {
   // int cadenceLength = 0;
 
   // Serviços
-  late Service _fitnessMachineService;
   late Characteristic _bikeIndoorData;
 
   // Stream
@@ -26,13 +25,7 @@ class BluetoothBikeService {
 
     _bleBikeMetricsNotifier.updateIsConnectedValue(true);
 
-    _fitnessMachineService =
-        BluetoothEquipmentService.getFitnessMachineService(services);
-
-    _bikeIndoorData = _fitnessMachineService.characteristics.firstWhere(
-      (characteristic) =>
-          characteristic.id == BluetoothEquipmentService.guids.bikeIndoorData,
-    );
+    _bikeIndoorData = BluetoothEquipmentService.getBikeIndoorData(services);
 
     _bikeCharacteristicStream = _bikeIndoorData.subscribe().listen((value) {
       final BikeGoperBluetooth bikeGoperBluetooth =

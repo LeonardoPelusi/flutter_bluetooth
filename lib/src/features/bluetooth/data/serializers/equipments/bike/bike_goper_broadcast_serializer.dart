@@ -1,4 +1,4 @@
-part of 'bluetooth_serializer.dart';
+part of '../../bluetooth_serializer.dart';
 
 final bikeGoperBroadcastSerializer = BikeGoperBroadcastSerializer();
 
