@@ -23,8 +23,11 @@ class BluetoothBikeService {
   //seleciona fitness service para capturar os valores de cadencia e potencia
   Future<void> getIndoorBikeData(List<Service> services) async {
     cleanBikeData();
-    _fitnessMachineService = services.firstWhere((service) =>
-        service.id == BluetoothEquipmentService.guids.fitnessMachineService);
+
+    _bleBikeMetricsNotifier.updateIsConnectedValue(true);
+
+    _fitnessMachineService =
+        BluetoothEquipmentService.getFitnessMachineService(services);
 
     _bikeIndoorData = _fitnessMachineService.characteristics.firstWhere(
       (characteristic) =>

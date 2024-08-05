@@ -18,16 +18,13 @@ part 'bluetooth_frequence_meter_service.dart';
 
 part '../../../domain/bluetooth_guid.dart';
 
-class BluetoothEquipmentService {
-  static final BluetoothEquipmentService instance = BluetoothEquipmentService();
-
-  final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
-
+abstract class BluetoothEquipmentService {
+  static bool isBroadcastConnection = false;
   static BluetoothGuid get guids => _BluetoothGuid();
 
-  static bool isBroadcastConnection = false;
+  static final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
 
-  String getEquipmentId({
+  static String getEquipmentId({
     required Uint8List manufacturerData,
     required DiscoveredDevice device,
   }) {
@@ -46,14 +43,14 @@ class BluetoothEquipmentService {
     return newId;
   }
 
-  Future<List<Service>> getServicesList(
+  static Future<List<Service>> getServicesList(
     BluetoothEquipmentModel equipment,
   ) async {
     return await _flutterReactiveBle
         .getDiscoveredServices(equipment.equipment.id);
   }
 
-  BluetoothConnectionType getBluetoothConnectionType(
+  static BluetoothConnectionType getBluetoothConnectionType(
       BluetoothEquipmentType equipmentType) {
     switch (equipmentType) {
       case BluetoothEquipmentType.bikeGoper:
@@ -67,5 +64,10 @@ class BluetoothEquipmentService {
       default:
         return BluetoothConnectionType.na;
     }
+  }
+
+  static Service getFitnessMachineService(List<Service> services) {
+    return services
+        .firstWhere((service) => service.id == guids.fitnessMachineService);
   }
 }

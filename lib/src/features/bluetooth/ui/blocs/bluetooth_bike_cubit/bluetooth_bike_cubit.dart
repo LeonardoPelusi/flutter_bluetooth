@@ -27,8 +27,6 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
   // Services
-  final BluetoothEquipmentService _equipmentService =
-      BluetoothEquipmentService.instance;
   final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
 
   // Streams
@@ -127,7 +125,7 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
 
   void _listenToDeviceServices(BluetoothEquipmentModel equipment) async {
     final List<Service> services =
-        await _equipmentService.getServicesList(equipment);
+        await BluetoothEquipmentService.getServicesList(equipment);
     await _bikeService.getIndoorBikeData(services);
   }
 

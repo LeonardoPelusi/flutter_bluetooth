@@ -112,10 +112,10 @@ class _BikeItemWidget extends StatelessWidget {
           valueListenable: BleBikeMetricsNotifier.resistance,
           builder: (context, value, child) => Text('Resistência: $value'),
         ),
-        ValueListenableBuilder(
-          valueListenable: BleBikeMetricsNotifier.speed,
-          builder: (context, value, child) => Text('Velociadade: $value'),
-        ),
+        // ValueListenableBuilder(
+        //   valueListenable: BleBikeMetricsNotifier.speed,
+        //   builder: (context, value, child) => Text('Velociadade: $value'),
+        // ),
       ],
     );
   }
