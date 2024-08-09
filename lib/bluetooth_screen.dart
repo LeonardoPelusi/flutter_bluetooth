@@ -63,7 +63,13 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bluetooth'),
+        title: Row(
+          children: [
+            const Text('Bluetooth'),
+            if(_hasStartedScan) const SizedBox(width: 20),
+            if(_hasStartedScan) const CircularProgressIndicator(),
+          ],
+        ),
       ),
       body: BlocBuilder<BluetoothEquipmentsCubit, BluetoothEquipmentsState>(
           bloc: _bluetoothEquipmentsCubit,
