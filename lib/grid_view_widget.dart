@@ -99,7 +99,7 @@ class _ConnectionItem extends StatefulWidget {
 class _ConnectionItemState extends State<_ConnectionItem> {
   late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
-  bool isBroadcastConnection = false;
+  bool isBroadcastConnection = BluetoothEquipmentService.isBroadcastConnection;
 
   @override
   void initState() {
