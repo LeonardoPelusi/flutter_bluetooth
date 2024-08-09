@@ -56,7 +56,9 @@ abstract class BluetoothEquipmentService {
       BluetoothEquipmentType equipmentType) {
     switch (equipmentType) {
       case BluetoothEquipmentType.bikeGoper:
-        return BluetoothConnectionType.broadcast;
+        return isBroadcastConnection
+            ? BluetoothConnectionType.broadcast
+            : BluetoothConnectionType.directConnect;
       case BluetoothEquipmentType.bikeKeiser:
         return BluetoothConnectionType.broadcast;
       case BluetoothEquipmentType.treadmill:
@@ -119,8 +121,8 @@ abstract class BluetoothEquipmentService {
   }
 
   static Characteristic getFrequencyMeterData(List<Service> services) {
-    final userDataService = _getUserDataService(services);
-    return userDataService.characteristics.firstWhere(
+    final frequencyMeterService = _getFrequencyMeterService(services);
+    return frequencyMeterService.characteristics.firstWhere(
       (characteristic) =>
           characteristic.id == BluetoothEquipmentService.guids.userWeight,
     );

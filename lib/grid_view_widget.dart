@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
@@ -15,7 +18,7 @@ class GridViewWidget extends StatelessWidget {
       ),
       crossAxisCount: 5,
       children: [
-        const SizedBox(),
+        const _ConnectionItem(),
         ValueListenableBuilder(
           valueListenable: BleBikeMetricsNotifier.isConnected,
           builder: (context, value, child) =>
@@ -81,6 +84,60 @@ class _GridViewItem extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ignore: unused_element
+class _ConnectionItem extends StatefulWidget {
+  const _ConnectionItem({super.key});
+
+  @override
+  State<_ConnectionItem> createState() => _ConnectionItemState();
+}
+
+class _ConnectionItemState extends State<_ConnectionItem> {
+  late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
+
+  bool isBroadcastConnection = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _bluetoothEquipmentsCubit = context.read<BluetoothEquipmentsCubit>();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    BluetoothEquipmentService.isBroadcastConnection = isBroadcastConnection;
+    print('isBroadcastConnection: $isBroadcastConnection');
+    return _GridViewItem(
+      title: 'Connection',
+      children: [
+        const _CustomDivider(),
+        const Text('Broadcast:'),
+        Switch.adaptive(
+          // Don't use the ambient CupertinoThemeData to style this switch.
+          applyCupertinoTheme: false,
+          value: isBroadcastConnection,
+          onChanged: (bool value) {
+            setState(() {
+              isBroadcastConnection = value;
+            });
+            _bluetoothEquipmentsCubit.startScan();
+          },
+        ),
+        const Text('Conexão Direta:'),
+        Switch.adaptive(
+          value: !isBroadcastConnection,
+          onChanged: (bool value) {
+            setState(() {
+              isBroadcastConnection = !value;
+            });
+            _bluetoothEquipmentsCubit.startScan();
+          },
+        ),
+      ],
     );
   }
 }

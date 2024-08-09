@@ -51,6 +51,8 @@ class _BluetoothScreen extends StatefulWidget {
 class _BluetoothScreenState extends State<_BluetoothScreen> {
   late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
+  bool _hasStartedScan = false;
+
   @override
   void initState() {
     super.initState();
@@ -68,11 +70,12 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
           buildWhen: (previous, current) =>
               previous.bluetoothEquipments != current.bluetoothEquipments,
           builder: (context, state) {
-            if (state.bluetoothEquipments.isEmpty) {
+            if (!_hasStartedScan) {
               return Center(
                 child: ElevatedButton(
                   onPressed: () {
                     _bluetoothEquipmentsCubit.startScan();
+                    _hasStartedScan = true;
                   },
                   child: const Text('Start Scan'),
                 ),
@@ -193,6 +196,7 @@ class _TreadmillItem extends StatelessWidget {
     );
   }
 }
+
 class _FrequencyMeterItem extends StatelessWidget {
   final BluetoothEquipmentModel bluetoothEquipment;
   const _FrequencyMeterItem({
@@ -205,7 +209,8 @@ class _FrequencyMeterItem extends StatelessWidget {
     final BluetoothFrequencyMeterCubit bluetoothFrequencyMeterCubit =
         context.read<BluetoothFrequencyMeterCubit>();
 
-    return BlocConsumer<BluetoothFrequencyMeterCubit, BluetoothFrequencyMeterState>(
+    return BlocConsumer<BluetoothFrequencyMeterCubit,
+        BluetoothFrequencyMeterState>(
       bloc: bluetoothFrequencyMeterCubit,
       listener: (context, state) {},
       builder: (context, state) {

@@ -67,6 +67,10 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   Future<void> startScan({
     Duration resetTime = const Duration(minutes: 25),
   }) async {
+    emit(state.copyWith(
+      bluetoothEquipments: [],
+    ));
+
     await _setSubscription();
     _resetTimer?.cancel();
     _resetTimer =
@@ -87,23 +91,7 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     final BluetoothEquipmentType equipmentType =
         BluetoothHelper.getBluetoothEquipmentType(device);
 
-    if (equipmentType == BluetoothEquipmentType.undefined) return;
-
-    switch (_bluetoothConnectFTMS) {
-      case BluetoothConnectFTMS.all:
-        break;
-      case BluetoothConnectFTMS.bikeAndMybeat:
-        if (equipmentType == BluetoothEquipmentType.treadmill) return;
-        break;
-      case BluetoothConnectFTMS.treadmillAndMybeat:
-        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
-            equipmentType == BluetoothEquipmentType.bikeKeiser) return;
-      case BluetoothConnectFTMS.onlyMyBeat:
-        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
-            equipmentType == BluetoothEquipmentType.bikeKeiser ||
-            equipmentType == BluetoothEquipmentType.treadmill) return;
-        break;
-    }
+    if (!_hasValidType(equipmentType)) return;
 
     final String newId = BluetoothEquipmentService.getEquipmentId(
       manufacturerData: device.manufacturerData,
@@ -127,8 +115,32 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
         bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
       ));
     } else {
-      _broadcastController.add(newEquipment);
+      if (newEquipment.connectionType == BluetoothConnectionType.broadcast) {
+        _broadcastController.add(newEquipment);
+      }
     }
+  }
+
+  bool _hasValidType(BluetoothEquipmentType equipmentType) {
+    if (equipmentType == BluetoothEquipmentType.undefined) return false;
+
+    switch (_bluetoothConnectFTMS) {
+      case BluetoothConnectFTMS.all:
+        break;
+      case BluetoothConnectFTMS.bikeAndMybeat:
+        if (equipmentType == BluetoothEquipmentType.treadmill) return false;
+        break;
+      case BluetoothConnectFTMS.treadmillAndMybeat:
+        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equipmentType == BluetoothEquipmentType.bikeKeiser) return false;
+      case BluetoothConnectFTMS.onlyMyBeat:
+        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equipmentType == BluetoothEquipmentType.bikeKeiser ||
+            equipmentType == BluetoothEquipmentType.treadmill) return false;
+        break;
+    }
+
+    return true;
   }
 
   // ====================== End Start Scan ======================
