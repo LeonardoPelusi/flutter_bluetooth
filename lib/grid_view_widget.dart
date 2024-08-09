@@ -110,7 +110,6 @@ class _ConnectionItemState extends State<_ConnectionItem> {
   @override
   Widget build(BuildContext context) {
     BluetoothEquipmentService.isBroadcastConnection = isBroadcastConnection;
-    print('isBroadcastConnection: $isBroadcastConnection');
     return _GridViewItem(
       title: 'Connection',
       children: [
