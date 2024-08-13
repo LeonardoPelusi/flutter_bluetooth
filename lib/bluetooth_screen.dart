@@ -66,8 +66,8 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
         title: Row(
           children: [
             const Text('Bluetooth'),
-            if(_hasStartedScan) const SizedBox(width: 20),
-            if(_hasStartedScan) const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            if (_hasStartedScan) const CircularProgressIndicator(),
           ],
         ),
       ),
@@ -92,34 +92,50 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
               children: [
                 Expanded(
                   flex: 14,
-                  child: ListView.builder(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width * 0.025,
-                    ),
-                    itemCount: state.bluetoothEquipments.length,
-                    itemBuilder: (ctx, index) {
-                      final bluetoothEquipment =
-                          state.bluetoothEquipments[index];
+                  child: state.bluetoothEquipments.isEmpty
+                      ? const Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('No devices found'),
+                              SizedBox(width: 20),
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                MediaQuery.of(context).size.width * 0.025,
+                          ),
+                          itemCount: state.bluetoothEquipments.length,
+                          itemBuilder: (ctx, index) {
+                            final bluetoothEquipment =
+                                state.bluetoothEquipments[index];
 
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: MediaQuery.of(context).size.height * 0.005,
+                            return Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical:
+                                    MediaQuery.of(context).size.height * 0.005,
+                              ),
+                              child: bluetoothEquipment.equipmentType ==
+                                          BluetoothEquipmentType.bikeGoper ||
+                                      bluetoothEquipment.equipmentType ==
+                                          BluetoothEquipmentType.bikeKeiser
+                                  ? _BikeItem(
+                                      bluetoothEquipment: bluetoothEquipment)
+                                  : bluetoothEquipment.equipmentType ==
+                                          BluetoothEquipmentType.treadmill
+                                      ? _TreadmillItem(
+                                          bluetoothEquipment:
+                                              bluetoothEquipment)
+                                      : _FrequencyMeterItem(
+                                          bluetoothEquipment:
+                                              bluetoothEquipment,
+                                        ),
+                            );
+                          },
                         ),
-                        child: bluetoothEquipment.equipmentType ==
-                                    BluetoothEquipmentType.bikeGoper ||
-                                bluetoothEquipment.equipmentType ==
-                                    BluetoothEquipmentType.bikeKeiser
-                            ? _BikeItem(bluetoothEquipment: bluetoothEquipment)
-                            : bluetoothEquipment.equipmentType ==
-                                    BluetoothEquipmentType.treadmill
-                                ? _TreadmillItem(
-                                    bluetoothEquipment: bluetoothEquipment)
-                                : _FrequencyMeterItem(
-                                    bluetoothEquipment: bluetoothEquipment,
-                                  ),
-                      );
-                    },
-                  ),
                 ),
                 const Spacer(),
                 const Expanded(
