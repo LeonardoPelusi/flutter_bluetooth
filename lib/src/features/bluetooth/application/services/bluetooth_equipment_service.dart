@@ -39,7 +39,7 @@ abstract class BluetoothEquipmentService {
         // nessa lista não são enviados os bytes 00 e 01 (CompanyId)
         newId = manufacturerData[3].toString();
       } else {
-        newId = manufacturerData.first.toString();
+        newId = manufacturerData[2].toString();
       }
     }
     return newId;
