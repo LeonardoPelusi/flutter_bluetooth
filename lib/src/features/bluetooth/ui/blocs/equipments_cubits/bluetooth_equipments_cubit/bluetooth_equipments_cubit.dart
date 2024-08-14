@@ -20,6 +20,8 @@ abstract class BluetoothEquipmentsCubit
     Duration resetTime,
   });
 
+  void resetScan();
+
   Stream<ConnectionStateUpdate> connectToEquipment(
     BluetoothEquipmentModel equipment,
   );
@@ -67,10 +69,6 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   Future<void> startScan({
     Duration resetTime = const Duration(minutes: 25),
   }) async {
-    emit(state.copyWith(
-      bluetoothEquipments: [],
-    ));
-
     await _setSubscription();
     _resetTimer?.cancel();
     _resetTimer =
@@ -81,6 +79,7 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     await _flutterReactiveBle.deinitialize();
     await _flutterReactiveBle.initialize();
     _scanSubscription?.cancel();
+    _scanSubscription = null;
     _scanSubscription = _flutterReactiveBle.scanForDevices(
       withServices: [],
       scanMode: ScanMode.lowLatency,
@@ -145,6 +144,13 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
 
   // ====================== End Start Scan ======================
 
+  @override
+  void resetScan() {
+    emit(state.copyWith(
+      bluetoothEquipments: [],
+    ));
+  }
+
   // ====================== Connect Methods ======================
 
   @override
@@ -173,7 +179,7 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     Bluetooth.treadmillConnected.value = TreadmillBleController(
         deviceConnected: false, openBox: true, openFooter: true);
 
-    _flutterReactiveBle.deinitialize();
+    await _flutterReactiveBle.deinitialize();
     await _scanSubscription?.cancel();
     _scanSubscription = null;
     await _broadcastController.close();

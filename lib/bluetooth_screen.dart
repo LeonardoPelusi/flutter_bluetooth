@@ -73,15 +73,13 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
       ),
       body: BlocBuilder<BluetoothEquipmentsCubit, BluetoothEquipmentsState>(
           bloc: _bluetoothEquipmentsCubit,
-          buildWhen: (previous, current) =>
-              previous.bluetoothEquipments != current.bluetoothEquipments,
           builder: (context, state) {
             if (!_hasStartedScan) {
               return Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    _bluetoothEquipmentsCubit.startScan();
                     _hasStartedScan = true;
+                    _bluetoothEquipmentsCubit.startScan();
                   },
                   child: const Text('Start Scan'),
                 ),

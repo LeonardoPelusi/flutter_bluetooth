@@ -123,7 +123,7 @@ class _ConnectionItemState extends State<_ConnectionItem> {
             setState(() {
               isBroadcastConnection = value;
             });
-            _bluetoothEquipmentsCubit.startScan();
+            _bluetoothEquipmentsCubit.resetScan();
           },
         ),
         const Text('Conexão Direta:'),
@@ -133,7 +133,7 @@ class _ConnectionItemState extends State<_ConnectionItem> {
             setState(() {
               isBroadcastConnection = !value;
             });
-            _bluetoothEquipmentsCubit.startScan();
+            _bluetoothEquipmentsCubit.resetScan();
           },
         ),
       ],
