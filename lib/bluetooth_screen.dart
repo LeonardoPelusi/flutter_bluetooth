@@ -78,7 +78,10 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
               return Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    _hasStartedScan = true;
+                    setState(() {
+                      _hasStartedScan = true;
+                    });
+
                     _bluetoothEquipmentsCubit.startScan();
                   },
                   child: const Text('Start Scan'),
