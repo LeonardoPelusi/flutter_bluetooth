@@ -71,13 +71,15 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   }) async {
     await _setSubscription();
     _resetTimer?.cancel();
-    _resetTimer =
-        Timer.periodic(resetTime, (_) async => await _setSubscription());
+    _resetTimer = Timer.periodic(
+        resetTime, (_) async => await _setSubscription(reset: true));
   }
 
-  Future<void> _setSubscription() async {
-    await _flutterReactiveBle.deinitialize();
-    await _flutterReactiveBle.initialize();
+  Future<void> _setSubscription({bool reset = false}) async {
+    if (!reset) {
+      await _flutterReactiveBle.deinitialize();
+      await _flutterReactiveBle.initialize();
+    }
     _scanSubscription?.cancel();
     _scanSubscription = null;
     _scanSubscription = _flutterReactiveBle.scanForDevices(
