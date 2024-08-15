@@ -18,7 +18,7 @@ class GridViewWidget extends StatelessWidget {
       ),
       crossAxisCount: 5,
       children: [
-        const _ConnectionItem(),
+        const SizedBox(),
         ValueListenableBuilder(
           valueListenable: BleBikeMetricsNotifier.isConnected,
           builder: (context, value, child) =>
@@ -84,59 +84,6 @@ class _GridViewItem extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-// ignore: unused_element
-class _ConnectionItem extends StatefulWidget {
-  const _ConnectionItem({super.key});
-
-  @override
-  State<_ConnectionItem> createState() => _ConnectionItemState();
-}
-
-class _ConnectionItemState extends State<_ConnectionItem> {
-  late final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
-
-  bool isBroadcastConnection = BluetoothEquipmentService.isBroadcastConnection;
-
-  @override
-  void initState() {
-    super.initState();
-    _bluetoothEquipmentsCubit = context.read<BluetoothEquipmentsCubit>();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    BluetoothEquipmentService.isBroadcastConnection = isBroadcastConnection;
-    return _GridViewItem(
-      title: 'Connection',
-      children: [
-        const _CustomDivider(),
-        const Text('Broadcast:'),
-        Switch.adaptive(
-          // Don't use the ambient CupertinoThemeData to style this switch.
-          applyCupertinoTheme: false,
-          value: isBroadcastConnection,
-          onChanged: (bool value) {
-            setState(() {
-              isBroadcastConnection = value;
-            });
-            _bluetoothEquipmentsCubit.resetScan();
-          },
-        ),
-        const Text('Conexão Direta:'),
-        Switch.adaptive(
-          value: !isBroadcastConnection,
-          onChanged: (bool value) {
-            setState(() {
-              isBroadcastConnection = !value;
-            });
-            _bluetoothEquipmentsCubit.resetScan();
-          },
-        ),
-      ],
     );
   }
 }

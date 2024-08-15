@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bluetooth_serializer.dart';
@@ -21,8 +20,6 @@ part 'frequency_meter/bluetooth_frequency_meter_service.dart';
 part '../../domain/bluetooth_guid.dart';
 
 abstract class BluetoothEquipmentService {
-  static bool isBroadcastConnection = false;
-
   static final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
   static BluetoothGuid get guids => _BluetoothGuid();
 
@@ -50,24 +47,6 @@ abstract class BluetoothEquipmentService {
   ) async {
     return await _flutterReactiveBle
         .getDiscoveredServices(equipment.equipment.id);
-  }
-
-  static BluetoothConnectionType getBluetoothConnectionType(
-      BluetoothEquipmentType equipmentType) {
-    switch (equipmentType) {
-      case BluetoothEquipmentType.bikeGoper:
-        return isBroadcastConnection
-            ? BluetoothConnectionType.broadcast
-            : BluetoothConnectionType.directConnect;
-      case BluetoothEquipmentType.bikeKeiser:
-        return BluetoothConnectionType.broadcast;
-      case BluetoothEquipmentType.treadmill:
-        return BluetoothConnectionType.directConnect;
-      case BluetoothEquipmentType.frequencyMeter:
-        return BluetoothConnectionType.directConnect;
-      default:
-        return BluetoothConnectionType.na;
-    }
   }
 
   static Service _getFitnessMachineService(List<Service> services) {

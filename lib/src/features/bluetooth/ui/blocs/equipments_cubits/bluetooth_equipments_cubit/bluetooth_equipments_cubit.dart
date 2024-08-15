@@ -99,16 +99,11 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       device: device,
     );
 
-    final BluetoothConnectionType connectionType =
-        BluetoothEquipmentService.getBluetoothConnectionType(
-      equipmentType,
-    );
-
     final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
       id: newId,
       equipment: device,
       equipmentType: equipmentType,
-      connectionType: connectionType,
+      connectionType: equipmentType.getConnectionType,
     );
 
     if (!state.bluetoothEquipments.hasEquipment(newEquipment)) {
@@ -116,7 +111,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
         bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
       ));
     } else {
-      if (newEquipment.connectionType == BluetoothConnectionType.broadcast) {
+      if (newEquipment.connectionType == BluetoothConnectionType.all ||
+          newEquipment.connectionType == BluetoothConnectionType.broadcast) {
         _broadcastController.add(newEquipment);
       }
     }

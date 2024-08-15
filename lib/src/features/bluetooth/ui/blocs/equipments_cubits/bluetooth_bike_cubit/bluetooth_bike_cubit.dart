@@ -43,11 +43,7 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
     _bikeStream?.cancel();
 
     if (equipment.connectionType == BluetoothConnectionType.broadcast) {
-      emit(BluetoothBikeConnected(
-        equipment: equipment,
-      ));
-      _bikeBroadcastStream = _bluetoothEquipmentsCubit.equipmentsStream
-          .listen(_onEquipmentDiscovered);
+      _listenToBroadcast(equipment);
     } else {
       _bikeStream = _bluetoothEquipmentsCubit
           .connectToEquipment(equipment)
@@ -57,6 +53,14 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   }
 
   // =============== BROADCAST ===============
+
+  void _listenToBroadcast(BluetoothEquipmentModel equipment) {
+    emit(BluetoothBikeConnected(
+      equipment: equipment,
+    ));
+    _bikeBroadcastStream = _bluetoothEquipmentsCubit.equipmentsStream
+        .listen(_onEquipmentDiscovered);
+  }
 
   void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
     if (state is BluetoothBikeConnected) {
@@ -113,22 +117,24 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
     }
 
     if (equipmentState.failure != null) {
-      switch (equipmentState.failure?.code) {
-        case ConnectionError.failedToConnect:
-          emit(const BluetoothBikeError(
-            message: 'Falha ao se conectar com a bike',
-          ));
-
-          break;
-        case ConnectionError.unknown:
-          emit(const BluetoothBikeError(
-            message: 'Erro ao se conectar com a bike',
-          ));
-          break;
-        default:
-          break;
-      }
       disconnect();
+      _listenToBroadcastMetrics(equipment);
+
+      // switch (equipmentState.failure?.code) {
+      //   case ConnectionError.failedToConnect:
+      //     emit(const BluetoothBikeError(
+      //       message: 'Falha ao se conectar com a bike',
+      //     ));
+
+      //     break;
+      //   case ConnectionError.unknown:
+      //     emit(const BluetoothBikeError(
+      //       message: 'Erro ao se conectar com a bike',
+      //     ));
+      //     break;
+      //   default:
+      //     break;
+      // }
     }
   }
 

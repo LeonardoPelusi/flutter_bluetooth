@@ -4,4 +4,5 @@ enum BluetoothConnectionType {
   na,
   directConnect,
   broadcast,
+  all;
 }
