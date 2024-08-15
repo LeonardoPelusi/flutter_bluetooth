@@ -7,6 +7,7 @@ import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cub
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_frequency_meter_cubit/bluetooth_frequency_meter_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_treadmill_cubit/bluetooth_treadmill_cubit.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class BluetoothScreen extends StatelessWidget {
   const BluetoothScreen({super.key});
@@ -77,10 +78,13 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
             if (!_hasStartedScan) {
               return Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     setState(() {
                       _hasStartedScan = true;
                     });
+
+                    PermissionStatus locationPermission =
+                        await Permission.location.request();
 
                     _bluetoothEquipmentsCubit.startScan();
                   },
