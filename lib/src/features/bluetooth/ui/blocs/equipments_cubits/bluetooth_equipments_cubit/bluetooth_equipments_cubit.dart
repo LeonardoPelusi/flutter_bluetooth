@@ -103,7 +103,7 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
       id: newId,
       equipment: device,
       equipmentType: equipmentType,
-      connectionType: equipmentType.getConnectionType,
+      communicationType: equipmentType.getCommunicationType,
     );
 
     if (!state.bluetoothEquipments.hasEquipment(newEquipment)) {
@@ -111,8 +111,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
         bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
       ));
     } else {
-      if (newEquipment.connectionType == BluetoothConnectionType.all ||
-          newEquipment.connectionType == BluetoothConnectionType.broadcast) {
+      if (newEquipment.communicationType == BluetoothCommunicationType.all ||
+          newEquipment.communicationType == BluetoothCommunicationType.broadcast) {
         _broadcastController.add(newEquipment);
       }
     }

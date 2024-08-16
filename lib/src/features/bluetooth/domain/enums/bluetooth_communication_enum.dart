@@ -1,6 +1,6 @@
 part of 'bluetooth_enums.dart';
 
-enum BluetoothConnectionType {
+enum BluetoothCommunicationType {
   na,
   directConnect,
   broadcast,

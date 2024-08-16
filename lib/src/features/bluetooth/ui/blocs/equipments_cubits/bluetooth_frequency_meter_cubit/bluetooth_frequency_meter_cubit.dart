@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -44,7 +43,7 @@ class BluetoothFrequencyMeterCubitImpl extends BluetoothFrequencyMeterCubit {
     _frequencyMeterBroadcastStream?.cancel();
     _frequencyMeterStream?.cancel();
 
-    if (equipment.connectionType == BluetoothConnectionType.broadcast) {
+    if (equipment.communicationType == BluetoothCommunicationType.broadcast) {
       _frequencyMeterBroadcastStream = _bluetoothEquipmentsCubit
           .equipmentsStream
           .listen(_onEquipmentDiscovered);

@@ -42,7 +42,7 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
     _bikeBroadcastStream?.cancel();
     _bikeStream?.cancel();
 
-    if (equipment.connectionType == BluetoothConnectionType.broadcast) {
+    if (equipment.communicationType == BluetoothCommunicationType.broadcast) {
       _listenToBroadcast(equipment);
     } else {
       _bikeStream = _bluetoothEquipmentsCubit

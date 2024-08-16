@@ -9,18 +9,18 @@ enum BluetoothEquipmentType {
 }
 
 extension BluetoothEquipmentTypeExtension on BluetoothEquipmentType {
-  BluetoothConnectionType get getConnectionType {
+  BluetoothCommunicationType get getCommunicationType {
     switch (this) {
       case BluetoothEquipmentType.bikeGoper:
-        return BluetoothConnectionType.all;
+        return BluetoothCommunicationType.all;
       case BluetoothEquipmentType.bikeKeiser:
-        return BluetoothConnectionType.broadcast;
+        return BluetoothCommunicationType.broadcast;
       case BluetoothEquipmentType.treadmill:
-        return BluetoothConnectionType.directConnect;
+        return BluetoothCommunicationType.directConnect;
       case BluetoothEquipmentType.frequencyMeter:
-        return BluetoothConnectionType.directConnect;
+        return BluetoothCommunicationType.directConnect;
       default:
-        return BluetoothConnectionType.na;
+        return BluetoothCommunicationType.na;
     }
   }
 }

@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bluetooth_serializer.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_bluetooth.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_keiser_broadcast.dart';

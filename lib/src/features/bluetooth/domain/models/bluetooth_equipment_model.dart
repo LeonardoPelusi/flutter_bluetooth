@@ -6,13 +6,13 @@ class BluetoothEquipmentModel extends Equatable {
   final String id;
   final DiscoveredDevice equipment;
   final BluetoothEquipmentType equipmentType;
-  final BluetoothConnectionType connectionType;
+  final BluetoothCommunicationType communicationType;
 
   const BluetoothEquipmentModel({
     required this.id,
     required this.equipment,
     required this.equipmentType,
-    required this.connectionType,
+    required this.communicationType,
   });
 
   @override
@@ -21,7 +21,7 @@ class BluetoothEquipmentModel extends Equatable {
       id,
       equipment,
       equipmentType,
-      connectionType,
+      communicationType,
     ];
   }
 }
