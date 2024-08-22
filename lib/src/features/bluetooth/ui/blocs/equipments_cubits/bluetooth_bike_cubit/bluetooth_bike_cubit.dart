@@ -21,10 +21,20 @@ abstract class BluetoothBikeCubit extends Cubit<BluetoothBikeState> {
 class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   BluetoothBikeCubitImpl(
     this._bluetoothEquipmentsCubit,
-  );
+  ) {
+    _bluetoothEquipmentsStream =
+        _bluetoothEquipmentsCubit.stream.listen((bluetoothEquipmentsState) {
+      if (bluetoothEquipmentsState.bluetoothEquipments.isEmpty) return;
+      if (bluetoothEquipmentsState.bluetoothEquipments.last.equipmentType !=
+          BluetoothEquipmentType.bikeGoper) return;
+      if (bluetoothEquipmentsState.bluetoothEquipments.last.equipmentType !=
+          BluetoothEquipmentType.bikeKeiser) return;
+    });
+  }
 
   // Cubits
   final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
+  StreamSubscription? _bluetoothEquipmentsStream;
 
   // Services
   final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
@@ -128,6 +138,13 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
 
       //     break;
       //   case ConnectionError.unknown:
+      //     _bluetoothEquipmentsCubit
+      //         .emit(_bluetoothEquipmentsCubit.state.copyWith(
+      //       bluetoothEquipments: _bluetoothEquipmentsCubit
+      //           .state.bluetoothEquipments
+      //           .where((element) => element.equipment.id != equipment.id)
+      //           .toList(),
+      //     ));
       //     emit(const BluetoothBikeError(
       //       message: 'Erro ao se conectar com a bike',
       //     ));
@@ -162,6 +179,8 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
 
   @override
   Future<void> close() async {
+    _bluetoothEquipmentsStream?.cancel();
+    _bluetoothEquipmentsStream = null;
     _clearData();
     super.close();
   }
