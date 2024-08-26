@@ -1,4 +1,5 @@
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_names.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
@@ -27,11 +28,11 @@ abstract class BluetoothHelper {
   static List<Uuid> servicesFilterList() {
     return [
       // User Data
-      BluetoothEquipmentService.guids.userDataService,
+      BluetoothGuid.userDataService,
       // FitnessMachine - Bike & Treadmill
-      BluetoothEquipmentService.guids.fitnessMachineService,
+      BluetoothGuid.fitnessMachineService,
       // Frequency Meter
-      BluetoothEquipmentService.guids.frequencyMeterService,
+      BluetoothGuid.frequencyMeterService,
     ];
   }
 
@@ -43,57 +44,30 @@ abstract class BluetoothHelper {
   }
 
   static bool _isBikeGoper(DiscoveredDevice device) {
-    for (String name in _bikesGoperNamesList) {
+    for (String name in BluetoothNames.bikesGoperNamesList) {
       if (device.name.contains(name)) return true;
     }
     return false;
   }
 
   static bool isBikeKeiser(DiscoveredDevice device) {
-    for (String name in _bikesKeiserNamesList) {
+    for (String name in BluetoothNames.bikesKeiserNamesList) {
       if (device.name.contains(name)) return true;
     }
     return false;
   }
 
   static bool isTreadmill(DiscoveredDevice device) {
-    for (String name in _treadmillsNamesList) {
+    for (String name in BluetoothNames.treadmillsNamesList) {
       if (device.name.contains(name)) return true;
     }
     return false;
   }
 
   static bool isFrequencyMeter(DiscoveredDevice device) {
-    for (String name in _frequencyMetersNamesList) {
+    for (String name in BluetoothNames.frequencyMetersNamesList) {
       if (device.name.contains(name)) return true;
     }
     return false;
-  }
-
-  static List<String> get _bikesGoperNamesList {
-    return [
-      'Goper Bike          ',
-      'BIKE-',
-    ];
-  }
-
-  static List<String> get _bikesKeiserNamesList {
-    return [
-      'M3',
-    ];
-  }
-
-  static List<String> get _treadmillsNamesList {
-    return [
-      'i-Power+',
-      'EQI-Treadmill',
-      'Goper Run',
-    ];
-  }
-
-  static List<String> get _frequencyMetersNamesList {
-    return [
-      'mbeat',
-    ];
   }
 }
