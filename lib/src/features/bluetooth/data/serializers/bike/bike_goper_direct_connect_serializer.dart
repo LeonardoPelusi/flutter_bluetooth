@@ -1,12 +1,13 @@
 part of '../bluetooth_serializer.dart';
 
-final bikeGoperBluetoothSerializer = BikeGoperBluetoothSerializer();
+final BikeGoperDirectConnectSerializer bikeGoperDirectConnectSerializer =
+    BikeGoperDirectConnectSerializer();
 
-class BikeGoperBluetoothSerializer
-    implements BluetoothSerializer<BikeGoperBluetooth, Uint8List> {
+class BikeGoperDirectConnectSerializer
+    implements BluetoothSerializer<BikeGoperDirectConnect, Uint8List> {
   @override
-  BikeGoperBluetooth from(List<int> bikeData) {
-    if (bikeData.isEmpty) return initialBikeGoperBluetooth;
+  BikeGoperDirectConnect from(List<int> bikeData) {
+    if (bikeData.isEmpty) return initialBikeGoperDirectConnect;
 
     late int cadence;
     late int power;
@@ -40,7 +41,7 @@ class BikeGoperBluetoothSerializer
 
     speed = _calculateSpeed(power);
 
-    final result = BikeGoperBluetooth(
+    final result = BikeGoperDirectConnect(
       cadence: cadence,
       power: power,
       resistance: resistance,
@@ -50,7 +51,7 @@ class BikeGoperBluetoothSerializer
   }
 
   @override
-  to(BikeGoperBluetooth object) {
+  to(BikeGoperDirectConnect object) {
     throw UnimplementedError();
   }
 }

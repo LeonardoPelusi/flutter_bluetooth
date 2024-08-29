@@ -1,4 +1,4 @@
-part of '../bluetooth_equipment_service.dart';
+part of '../../bluetooth_equipment_service.dart';
 
 class BluetoothTreadmillService {
   static BluetoothTreadmillService get instance => BluetoothTreadmillService();

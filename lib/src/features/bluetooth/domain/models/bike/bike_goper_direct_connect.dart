@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-class BikeGoperBluetooth extends Equatable {
-  const BikeGoperBluetooth({
+class BikeGoperDirectConnect extends Equatable {
+  const BikeGoperDirectConnect({
     required this.cadence,
     required this.power,
     required this.resistance,
@@ -17,7 +17,7 @@ class BikeGoperBluetooth extends Equatable {
   List<Object?> get props => [cadence, power, resistance, speed];
 }
 
-const initialBikeGoperBluetooth = BikeGoperBluetooth(
+const initialBikeGoperDirectConnect = BikeGoperDirectConnect(
   cadence: 0,
   power: 0,
   resistance: 0,
