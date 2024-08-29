@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments/treadmill/treadmill.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -25,8 +26,7 @@ class BluetoothTreadmillCubitImpl extends BluetoothTreadmillCubit {
   final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
   // Services
-  final BluetoothTreadmillService _treadmillService =
-      BluetoothTreadmillService.instance;
+  final Treadmill _treadmillService = Treadmill();
 
   // Streams
   StreamSubscription<BluetoothEquipmentModel>? _treadmillBroadcastStream;
@@ -98,7 +98,7 @@ class BluetoothTreadmillCubitImpl extends BluetoothTreadmillCubit {
   void _listenToDeviceServices(BluetoothEquipmentModel equipment) async {
     final List<Service> services =
         await BluetoothEquipmentService.getServicesList(equipment);
-    await _treadmillService.getTreadmillData(services);
+    await _treadmillService.getDataFromServices(services);
   }
 
   // ========== END DIRECT CONNECT ==========
@@ -110,7 +110,7 @@ class BluetoothTreadmillCubitImpl extends BluetoothTreadmillCubit {
   }
 
   void _clearData() {
-    _treadmillService.cleanTreadmillData();
+    _treadmillService.cleanData();
     _treadmillBroadcastStream?.cancel();
     _treadmillBroadcastStream = null;
     _treadmillStream?.cancel();

@@ -25,6 +25,31 @@ abstract class BluetoothHelper {
     return equipmentType;
   }
 
+  static bool hasValidType({
+    required BluetoothConnectFTMS bluetoothConnectFTMS,
+    required BluetoothEquipmentType equipmentType,
+  }) {
+    if (equipmentType == BluetoothEquipmentType.undefined) return false;
+
+    switch (bluetoothConnectFTMS) {
+      case BluetoothConnectFTMS.all:
+        break;
+      case BluetoothConnectFTMS.bikeAndMybeat:
+        if (equipmentType == BluetoothEquipmentType.treadmill) return false;
+        break;
+      case BluetoothConnectFTMS.treadmillAndMybeat:
+        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equipmentType == BluetoothEquipmentType.bikeKeiser) return false;
+      case BluetoothConnectFTMS.onlyMyBeat:
+        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
+            equipmentType == BluetoothEquipmentType.bikeKeiser ||
+            equipmentType == BluetoothEquipmentType.treadmill) return false;
+        break;
+    }
+
+    return true;
+  }
+
   static List<Uuid> servicesFilterList() {
     return [
       // User Data

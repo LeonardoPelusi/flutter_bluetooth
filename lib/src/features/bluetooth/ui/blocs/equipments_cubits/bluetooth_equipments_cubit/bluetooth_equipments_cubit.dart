@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/bluetooth_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/core/list_bluetooth_equipment_model_extension.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/domain/extensions/list_bluetooth_equipment_model_extension.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/data/infrastructure/bluetooth_scanner.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -16,9 +15,7 @@ abstract class BluetoothEquipmentsCubit
     extends Cubit<BluetoothEquipmentsState> {
   BluetoothEquipmentsCubit() : super(const BluetoothEquipmentsState());
 
-  Future<void> startScan({
-    Duration resetTime,
-  });
+  void startScan();
 
   void resetScan();
 
@@ -31,113 +28,46 @@ abstract class BluetoothEquipmentsCubit
 
 class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
   BluetoothEquipmentsCubitImpl(
-    this._bluetoothConnectFTMS,
-    // this._bluetoothSharedPreferencesService,
-  ) : super() {
-    _flutterReactiveBle.statusStream.listen((event) {
-      if (event == BleStatus.ready) {
-        // Caso o equipamento seja uma esteira-usb não será necessário
-        // realizar esses processos
-        // if (!_isTreadmillUSB) {
-        // add(BluetoothEquipmentsStartScanEvent());
-        //   add(BluetoothEquipmentsBackgroundScanEvent());
-        // }
-      } else {
-        // !TODO adiocionar tratamento de erro
-      }
-    });
-  }
+      // this._bluetoothSharedPreferencesService,
+      );
 
-  final BluetoothConnectFTMS _bluetoothConnectFTMS;
+  final BluetoothScanner _bluetoothScanner = BluetoothScannerImpl();
+
   // final BluetoothSharedPreferencesService _bluetoothSharedPreferencesService;
 
   // Services
   final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
 
   // Control Variables (Streams)
-  StreamSubscription<DiscoveredDevice>? _scanSubscription;
   final StreamController<BluetoothEquipmentModel> _broadcastController =
       StreamController<BluetoothEquipmentModel>.broadcast();
 
   // Control Variables (Timers)
-  Timer? _resetTimer;
   final Duration _connectionTimeoutDuration = const Duration(seconds: 10);
 
   // ======================== Scan Methods ========================
 
   @override
-  Future<void> startScan({
-    Duration resetTime = const Duration(minutes: 25),
-  }) async {
-    await _setSubscription();
-    _resetTimer?.cancel();
-    _resetTimer = Timer.periodic(
-        resetTime, (_) async => await _setSubscription(reset: true));
+  void startScan() {
+    _bluetoothScanner.startScan();
+    _listenToEquipmentsStream();
   }
 
-  Future<void> _setSubscription({bool reset = false}) async {
-    if (!reset) {
-      await _flutterReactiveBle.deinitialize();
-      await _flutterReactiveBle.initialize();
-    }
-    _scanSubscription?.cancel();
-    _scanSubscription = null;
-    _scanSubscription = _flutterReactiveBle.scanForDevices(
-      withServices: [],
-      scanMode: ScanMode.lowLatency,
-    ).listen(_onDeviceDiscovered);
+  void _listenToEquipmentsStream() {
+    _bluetoothScanner.equipmentsStream.listen(_onEquipmentDiscovered);
   }
 
-  void _onDeviceDiscovered(DiscoveredDevice device) {
-    final BluetoothEquipmentType equipmentType =
-        BluetoothHelper.getBluetoothEquipmentType(device);
-
-    if (!_hasValidType(equipmentType)) return;
-
-    final String newId = BluetoothEquipmentService.getEquipmentId(
-      manufacturerData: device.manufacturerData,
-      device: device,
-    );
-
-    final BluetoothEquipmentModel newEquipment = BluetoothEquipmentModel(
-      id: newId,
-      equipment: device,
-      equipmentType: equipmentType,
-      communicationType: equipmentType.getCommunicationType,
-    );
-
-    if (!state.bluetoothEquipments.hasEquipment(newEquipment)) {
+  void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
+    if (!state.bluetoothEquipments.hasEquipment(equipment)) {
       emit(state.copyWith(
-        bluetoothEquipments: [...state.bluetoothEquipments, newEquipment],
+        bluetoothEquipments: [...state.bluetoothEquipments, equipment],
       ));
     } else {
-      if (newEquipment.communicationType == BluetoothCommunicationType.all ||
-          newEquipment.communicationType == BluetoothCommunicationType.broadcast) {
-        _broadcastController.add(newEquipment);
+      if (equipment.communicationType == BluetoothCommunicationType.all ||
+          equipment.communicationType == BluetoothCommunicationType.broadcast) {
+        _broadcastController.add(equipment);
       }
     }
-  }
-
-  bool _hasValidType(BluetoothEquipmentType equipmentType) {
-    if (equipmentType == BluetoothEquipmentType.undefined) return false;
-
-    switch (_bluetoothConnectFTMS) {
-      case BluetoothConnectFTMS.all:
-        break;
-      case BluetoothConnectFTMS.bikeAndMybeat:
-        if (equipmentType == BluetoothEquipmentType.treadmill) return false;
-        break;
-      case BluetoothConnectFTMS.treadmillAndMybeat:
-        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
-            equipmentType == BluetoothEquipmentType.bikeKeiser) return false;
-      case BluetoothConnectFTMS.onlyMyBeat:
-        if (equipmentType == BluetoothEquipmentType.bikeGoper ||
-            equipmentType == BluetoothEquipmentType.bikeKeiser ||
-            equipmentType == BluetoothEquipmentType.treadmill) return false;
-        break;
-    }
-
-    return true;
   }
 
   // ====================== End Start Scan ======================
@@ -177,12 +107,8 @@ class BluetoothEquipmentsCubitImpl extends BluetoothEquipmentsCubit {
     Bluetooth.treadmillConnected.value = TreadmillBleController(
         deviceConnected: false, openBox: true, openFooter: true);
 
-    await _flutterReactiveBle.deinitialize();
-    await _scanSubscription?.cancel();
-    _scanSubscription = null;
+    _bluetoothScanner.stopScan();
     await _broadcastController.close();
-    _resetTimer?.cancel();
-    _resetTimer = null;
     super.close();
   }
 

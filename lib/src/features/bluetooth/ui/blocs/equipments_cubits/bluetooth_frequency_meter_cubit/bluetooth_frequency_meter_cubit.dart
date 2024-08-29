@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments/frequency_meter/frequency_meter.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
@@ -27,8 +28,7 @@ class BluetoothFrequencyMeterCubitImpl extends BluetoothFrequencyMeterCubit {
   final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
 
   // Services
-  final BluetoothFrequencyMeterService _frequencyMeterService =
-      BluetoothFrequencyMeterService.instance;
+  final FrequencyMeter _frequencyMeterService = FrequencyMeter();
 
   // Streams
   StreamSubscription<BluetoothEquipmentModel>? _frequencyMeterBroadcastStream;
@@ -63,7 +63,8 @@ class BluetoothFrequencyMeterCubitImpl extends BluetoothFrequencyMeterCubit {
   void _onEquipmentDiscovered(BluetoothEquipmentModel equipment) {
     if (state is BluetoothFrequencyMeterConnected) {
       final state = this.state as BluetoothFrequencyMeterConnected;
-      if (state.equipment.equipment.id == equipment.equipment.id) _listenToBroadcastMetrics(equipment);
+      if (state.equipment.equipment.id == equipment.equipment.id)
+        _listenToBroadcastMetrics(equipment);
     }
   }
 
@@ -134,7 +135,7 @@ class BluetoothFrequencyMeterCubitImpl extends BluetoothFrequencyMeterCubit {
   void _listenToDeviceServices(BluetoothEquipmentModel equipment) async {
     final List<Service> services =
         await BluetoothEquipmentService.getServicesList(equipment);
-    await _frequencyMeterService.getFrequencyMeterMeasurement(services);
+    await _frequencyMeterService.getDataFromServices(services);
   }
 
   // ========== END DIRECT CONNECT ==========
@@ -146,7 +147,7 @@ class BluetoothFrequencyMeterCubitImpl extends BluetoothFrequencyMeterCubit {
   }
 
   void _clearData() {
-    _frequencyMeterService.cleanFequencyMeterData();
+    _frequencyMeterService.cleanData();
     _frequencyMeterBroadcastStream?.cancel();
     _frequencyMeterBroadcastStream = null;
     _frequencyMeterStream?.cancel();

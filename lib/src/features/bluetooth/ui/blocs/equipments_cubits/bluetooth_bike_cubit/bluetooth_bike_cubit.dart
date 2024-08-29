@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments/bike/bike_goper.dart';
+import 'package:flutter_bluetooth/src/features/bluetooth/application/services/equipments/bike/bike_keiser.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/enums/bluetooth_enums.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
@@ -37,7 +39,8 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   StreamSubscription? _bluetoothEquipmentsStream;
 
   // Services
-  final BluetoothBikeService _bikeService = BluetoothBikeService.instance;
+  final BikeKeiser _bikeKeiserService = BikeKeiser();
+  final BikeGoper _bikeGoperService = BikeGoper();
 
   // Streams
   StreamSubscription<BluetoothEquipmentModel>? _bikeBroadcastStream;
@@ -86,10 +89,10 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
 
     switch (equipment.equipmentType) {
       case BluetoothEquipmentType.bikeKeiser:
-        _bikeService.getBroadcastBikeKeiserData(manufacturerData);
+        _bikeKeiserService.getDataFromManufacturerData(manufacturerData);
         break;
       case BluetoothEquipmentType.bikeGoper:
-        _bikeService.getBroadcastBikeGoperData(manufacturerData);
+        _bikeGoperService.getDataFromManufacturerData(manufacturerData);
         break;
       default:
         break;
@@ -158,7 +161,7 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   void _listenToDeviceServices(BluetoothEquipmentModel equipment) async {
     final List<Service> services =
         await BluetoothEquipmentService.getServicesList(equipment);
-    await _bikeService.getIndoorBikeData(services);
+    await _bikeGoperService.getDataFromServices(services);
   }
 
   // ========== END DIRECT CONNECT ==========
@@ -170,7 +173,8 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
   }
 
   void _clearData() {
-    _bikeService.cleanBikeData();
+    _bikeKeiserService.cleanData();
+    _bikeGoperService.cleanData();
     _bikeBroadcastStream?.cancel();
     _bikeBroadcastStream = null;
     _bikeStream?.cancel();

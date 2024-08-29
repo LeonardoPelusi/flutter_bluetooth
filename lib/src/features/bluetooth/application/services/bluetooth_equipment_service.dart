@@ -1,20 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter_bluetooth/src/features/bluetooth/data/serializers/bluetooth_serializer.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/bluetooth_helper.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_bluetooth.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_goper_broadcast.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bike/bike_keiser_broadcast.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/bluetooth_equipment_model.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/frequency_meter/frequency_meter_bluetooth.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/domain/models/treadmill/treadmill_bluetooth.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-
-part 'bike/bluetooth_bike_service.dart';
-part 'treadmill/bluetooth_treadmill_service.dart';
-part 'frequency_meter/bluetooth_frequency_meter_service.dart';
 
 part '../../domain/bluetooth_guid.dart';
 
@@ -22,11 +11,11 @@ abstract class BluetoothEquipmentService {
   static final FlutterReactiveBle _flutterReactiveBle = FlutterReactiveBle();
 
   static String getEquipmentId({
-    required Uint8List manufacturerData,
     required DiscoveredDevice device,
   }) {
     late String newId;
-    if (manufacturerData.isEmpty) {
+    final Uint8List manufacturerData = device.manufacturerData;
+    if (device.manufacturerData.isEmpty) {
       newId = '';
     } else {
       if (BluetoothHelper.isBikeKeiser(device)) {

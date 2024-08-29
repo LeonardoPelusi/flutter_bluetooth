@@ -21,9 +21,7 @@ class BluetoothAutomaticConnectCubitImpl
     this._bluetoothBikeCubit,
     this._bluetoothTreadmillCubit,
     this._bluetoothFrequencyMeterCubit,
-  ) {
-    startAutomaticConnectValidation();
-  }
+  );
 
   // Cubits
   final BluetoothEquipmentsCubit _bluetoothEquipmentsCubit;
@@ -58,14 +56,20 @@ class BluetoothAutomaticConnectCubitImpl
   Future<void> startAutomaticConnectValidation() async {
     await Future.delayed(_connectValidationDuration);
 
-    if (bluetoothBikes.length == 1) {
-      _bluetoothBikeCubit.connect(bluetoothBikes.first);
-    } else if (bluetoothTreadmills.length == 1) {
-      _bluetoothTreadmillCubit.connect(bluetoothTreadmills.first);
-    }
+    if (bluetoothEquipments.isEmpty) {
+      _connectWithFirstEquipment();
+    } else {
+      if (bluetoothBikes.length == 1) {
+        _bluetoothBikeCubit.connect(bluetoothBikes.first);
+      } else if (bluetoothTreadmills.length == 1) {
+        _bluetoothTreadmillCubit.connect(bluetoothTreadmills.first);
+      }
 
-    if (bluetoothFrequencyMeters.length == 1) {
-      _bluetoothFrequencyMeterCubit.connect(bluetoothFrequencyMeters.first);
+      if (bluetoothFrequencyMeters.length == 1) {
+        _bluetoothFrequencyMeterCubit.connect(bluetoothFrequencyMeters.first);
+      }
     }
   }
+
+  void _connectWithFirstEquipment() {}
 }

@@ -17,9 +17,7 @@ class BluetoothScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<BluetoothEquipmentsCubit>(
-          create: (_) => BluetoothEquipmentsCubitImpl(
-            BluetoothConnectFTMS.all,
-          ),
+          create: (_) => BluetoothEquipmentsCubitImpl(),
         ),
         BlocProvider<BluetoothBikeCubit>(
           create: (context) => BluetoothBikeCubitImpl(
