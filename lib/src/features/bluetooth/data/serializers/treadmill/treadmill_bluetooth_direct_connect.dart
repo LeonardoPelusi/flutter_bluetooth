@@ -1,12 +1,12 @@
 part of '../bluetooth_serializer.dart';
 
-final treadmillBluetoothSerializer = TreadmillBluetoothSerializer();
+final treadmillDirectConnectSerializer = TreadmillDirectConnectSerializer();
 
-class TreadmillBluetoothSerializer
-    implements BluetoothSerializer<TreadmillBluetooth, Uint8List> {
+class TreadmillDirectConnectSerializer
+    implements BluetoothSerializer<TreadmillDirectConnect, Uint8List> {
   @override
-  TreadmillBluetooth from(List<int> treadmillData) {
-    if (treadmillData.isEmpty) return initialTreadmillBluetooth;
+  TreadmillDirectConnect from(List<int> treadmillData) {
+    if (treadmillData.isEmpty) return initialTreadmillDirectConnect;
 
     int byte = 2;
 
@@ -27,7 +27,7 @@ class TreadmillBluetoothSerializer
 
     power = _powerForTreadmill(speed, inclination).round();
 
-    final result = TreadmillBluetooth(
+    final result = TreadmillDirectConnect(
       speed: speed,
       inclination: inclination,
       power: power,
@@ -36,7 +36,7 @@ class TreadmillBluetoothSerializer
   }
 
   @override
-  to(TreadmillBluetooth object) {
+  to(TreadmillDirectConnect object) {
     throw UnimplementedError();
   }
 

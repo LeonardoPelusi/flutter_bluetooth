@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-class TreadmillBluetooth extends Equatable {
-  const TreadmillBluetooth({
+class TreadmillDirectConnect extends Equatable {
+  const TreadmillDirectConnect({
     required this.speed,
     required this.inclination,
     required this.power,
@@ -15,7 +15,7 @@ class TreadmillBluetooth extends Equatable {
   List<Object?> get props => [speed, inclination, power];
 }
 
-const initialTreadmillBluetooth = TreadmillBluetooth(
+const initialTreadmillDirectConnect = TreadmillDirectConnect(
   speed: 0.0,
   inclination: 0.0,
   power: 0,
