@@ -67,8 +67,8 @@ class BluetoothTreadmillCubitImpl extends BluetoothTreadmillCubit {
         ));
 
         break;
-      case DeviceConnectionState.disconnecting:
-      case DeviceConnectionState.disconnected:
+      case DeviceConnectionState.disconnecting ||
+            DeviceConnectionState.disconnected:
         disconnect();
         break;
       default:

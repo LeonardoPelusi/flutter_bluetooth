@@ -40,7 +40,6 @@ abstract class BluetoothHelper {
       case BluetoothConnectFTMS.treadmillAndMybeat:
         if (equipmentType == BluetoothEquipmentType.bikeGoper ||
             equipmentType == BluetoothEquipmentType.bikeKeiser) return false;
-        break;
       case BluetoothConnectFTMS.onlyMyBeat:
         if (equipmentType == BluetoothEquipmentType.bikeGoper ||
             equipmentType == BluetoothEquipmentType.bikeKeiser ||
