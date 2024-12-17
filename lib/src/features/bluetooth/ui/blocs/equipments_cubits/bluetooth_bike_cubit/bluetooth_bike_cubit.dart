@@ -121,8 +121,8 @@ class BluetoothBikeCubitImpl extends BluetoothBikeCubit {
         ));
 
         break;
-      case DeviceConnectionState.disconnecting ||
-            DeviceConnectionState.disconnected:
+      case DeviceConnectionState.disconnecting:
+      case DeviceConnectionState.disconnected:
         disconnect();
         break;
       default:
