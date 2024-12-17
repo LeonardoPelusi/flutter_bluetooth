@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/application/services/bluetooth_equipment_service.dart';
-import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cubits/bluetooth_equipments_cubit/bluetooth_equipments_cubit.dart';
 import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/metrics_notifiers/metrics_notifiers.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
 class GridViewWidget extends StatelessWidget {
-  const GridViewWidget({super.key});
+  const GridViewWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +18,17 @@ class GridViewWidget extends StatelessWidget {
         const SizedBox(),
         ValueListenableBuilder(
           valueListenable: BleBikeMetricsNotifier.isConnected,
-          builder: (context, value, child) =>
+          builder: (context, bool value, child) =>
               value ? const _BikeItemWidget() : const SizedBox(),
         ),
         ValueListenableBuilder(
           valueListenable: BleTreadmillMetricsNotifier.isConnected,
-          builder: (context, value, child) =>
+          builder: (context, bool value, child) =>
               value ? const _TreadmillItemWidget() : const SizedBox(),
         ),
         ValueListenableBuilder(
           valueListenable: BleFrequencyMeterMetricsNotifier.isConnected,
-          builder: (context, value, child) =>
+          builder: (context, bool value, child) =>
               value ? const _FrequencyMeterItemWidget() : const SizedBox(),
         ),
         const SizedBox(),
@@ -89,7 +86,7 @@ class _GridViewItem extends StatelessWidget {
 }
 
 class _BikeItemWidget extends StatelessWidget {
-  const _BikeItemWidget({super.key});
+  const _BikeItemWidget();
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +122,7 @@ class _BikeItemWidget extends StatelessWidget {
 }
 
 class _TreadmillItemWidget extends StatelessWidget {
-  const _TreadmillItemWidget({super.key});
+  const _TreadmillItemWidget();
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +155,7 @@ class _TreadmillItemWidget extends StatelessWidget {
 }
 
 class _FrequencyMeterItemWidget extends StatelessWidget {
-  const _FrequencyMeterItemWidget({super.key});
+  const _FrequencyMeterItemWidget();
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +179,7 @@ class _FrequencyMeterItemWidget extends StatelessWidget {
 }
 
 class _CustomDivider extends StatelessWidget {
-  const _CustomDivider({super.key});
+  const _CustomDivider();
 
   @override
   Widget build(BuildContext context) {

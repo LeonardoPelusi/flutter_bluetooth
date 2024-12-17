@@ -10,7 +10,7 @@ import 'package:flutter_bluetooth/src/features/bluetooth/ui/blocs/equipments_cub
 import 'package:permission_handler/permission_handler.dart';
 
 class BluetoothScreen extends StatelessWidget {
-  const BluetoothScreen({super.key});
+  const BluetoothScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class BluetoothScreen extends StatelessWidget {
 }
 
 class _BluetoothScreen extends StatefulWidget {
-  const _BluetoothScreen({super.key});
+  const _BluetoothScreen();
 
   @override
   State<_BluetoothScreen> createState() => _BluetoothScreenState();
@@ -155,7 +155,6 @@ class _BluetoothScreenState extends State<_BluetoothScreen> {
 class _BikeItem extends StatelessWidget {
   final BluetoothEquipmentModel bluetoothEquipment;
   const _BikeItem({
-    super.key,
     required this.bluetoothEquipment,
   });
 
@@ -190,7 +189,6 @@ class _BikeItem extends StatelessWidget {
 class _TreadmillItem extends StatelessWidget {
   final BluetoothEquipmentModel bluetoothEquipment;
   const _TreadmillItem({
-    super.key,
     required this.bluetoothEquipment,
   });
 
@@ -225,7 +223,6 @@ class _TreadmillItem extends StatelessWidget {
 class _FrequencyMeterItem extends StatelessWidget {
   final BluetoothEquipmentModel bluetoothEquipment;
   const _FrequencyMeterItem({
-    super.key,
     required this.bluetoothEquipment,
   });
 
@@ -266,7 +263,6 @@ class BluetoothItemWidget extends StatelessWidget {
     required this.bluetoothEquipment,
     this.connected = false,
     this.isConnecting = false,
-    super.key,
   });
 
   @override
